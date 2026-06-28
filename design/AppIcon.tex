@@ -1,0 +1,27 @@
+\documentclass[border=0pt]{standalone}
+\usepackage{tikz}
+\definecolor{blu}{RGB}{40,110,240}
+\definecolor{blud}{RGB}{22,74,202}
+\newcommand{\sparkle}[3]{%
+  \begin{scope}[shift={(#1,#2)}]
+    \fill[white] (0,#3)
+      .. controls ({0.16*#3},{0.16*#3}) .. (#3,0)
+      .. controls ({0.16*#3},{-0.16*#3}) .. (0,-#3)
+      .. controls ({-0.16*#3},{-0.16*#3}) .. (-#3,0)
+      .. controls ({-0.16*#3},{0.16*#3}) .. (0,#3) -- cycle;
+  \end{scope}}
+\begin{document}
+\begin{tikzpicture}
+\clip (0,0) rectangle (10,10);
+\shade[left color=blu, right color=blud, shading angle=45] (0,0) rectangle (10,10);
+% scale the whole phone figure down about the center (more margin top/bottom)
+\begin{scope}[shift={(5,5)}, scale=0.83, shift={(-5,-5)}]
+  \draw[white, line width=0.46cm, rounded corners=1.15] (1.75,0.6) rectangle (8.25,9.4);
+  \sparkle{5.25}{6.15}{1.22}
+  \sparkle{3.65}{5.15}{0.52}
+  \sparkle{3.95}{7.35}{0.38}
+  \foreach \ry in {1.45,2.25,3.05}{\foreach \i in {0,...,3}{
+    \fill[white, rounded corners=0.10] ({2.695+\i*1.22},\ry) rectangle ({2.695+\i*1.22+0.95},{\ry+0.60});}}
+\end{scope}
+\end{tikzpicture}
+\end{document}

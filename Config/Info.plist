@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>zh-Hans</string>
+		<string>zh-Hant</string>
+	</array>
+	<!-- Expose the app's Documents directory in the Files app so users can see
+	     and manage the downloaded/imported GGUF model weights directly. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+
+	<!-- Camera capture for sending photos to the on-device model. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Photos you capture are sent to the on-device model for multimodal inference.</string>
+
+	<!-- URL scheme used by the openTihui keyboard extension to hand a writing
+	     task to the app for on-device (or API) generation. -->
+	<!-- Open a openTihui shortcut (.json) shared from another device/app. -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>openTihui Shortcut</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.json</string>
+			</array>
+		</dict>
+	</array>
+
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>org.cyyself.opentihui.compose</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>opentihui</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Allow plain-HTTP connections to local / LAN model servers (e.g. a
+	     self-hosted GGUF host). Internet downloads should still use HTTPS. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

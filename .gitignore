@@ -1,0 +1,22 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+
+# macOS
+.DS_Store
+
+# llama.cpp build dirs + the built xcframework (rebuilt with `make framework`;
+# the dSYMs exceed GitHub's 100 MB file limit, so it isn't committed).
+llama.cpp/build-apple/
+llama.cpp/build-ios-sim/
+llama.cpp/build-ios-device/
+Frameworks/llama.xcframework/
+scripts/build.log
+scripts/shots/
+
+# Models (do not commit large GGUF files)
+*.gguf
+build-dev/
