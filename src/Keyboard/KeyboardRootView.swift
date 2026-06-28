@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct KeyboardRootView: View {
     let actions: KeyboardActions
@@ -52,9 +53,10 @@ struct KeyboardRootView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            if actions.needsInputModeSwitchKey() {
-                keyButton("globe") { actions.advanceToNextInputMode() }
-            }
+            // Native keyboard switcher (always shown): tap = next keyboard,
+            // long-press = the keyboard picker, so you can jump back to your own.
+            SwitchKeyboardButton(configure: actions.configureSwitchButton)
+                .frame(width: 38, height: 34)
             Label("openTihui", systemImage: "sparkles").font(.subheadline.weight(.semibold))
             Spacer()
             Button { actions.deleteContextBefore() } label: {
@@ -211,4 +213,23 @@ struct KeyboardRootView: View {
             cfg.save(); config = cfg; status = .imported
         }
     }
+}
+
+/// A UIKit button wired to the system keyboard switcher (tap = next keyboard,
+/// long-press = the keyboard picker). Styled to match the keyboard's keys.
+private struct SwitchKeyboardButton: UIViewRepresentable {
+    let configure: (UIButton) -> Void
+
+    func makeUIView(context: Context) -> UIButton {
+        let b = UIButton(type: .system)
+        b.setImage(UIImage(systemName: "globe"), for: .normal)
+        b.tintColor = .label
+        b.backgroundColor = .systemBackground
+        b.layer.cornerRadius = 8
+        b.setContentHuggingPriority(.required, for: .horizontal)
+        configure(b)
+        return b
+    }
+
+    func updateUIView(_ uiView: UIButton, context: Context) {}
 }

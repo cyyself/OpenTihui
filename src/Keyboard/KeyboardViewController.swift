@@ -22,6 +22,9 @@ struct KeyboardActions {
     var openApp: (URL) -> Void
     var advanceToNextInputMode: () -> Void
     var needsInputModeSwitchKey: () -> Bool
+    /// Wire a button to the system keyboard switcher: tap = next keyboard,
+    /// long-press = the keyboard picker (so the user can jump back to their own).
+    var configureSwitchButton: (UIButton) -> Void
 }
 
 final class KeyboardViewController: UIInputViewController {
@@ -45,7 +48,12 @@ final class KeyboardViewController: UIInputViewController {
             hasFullAccess: { [weak self] in self?.hasFullAccess ?? false },
             openApp: { [weak self] in self?.openAppURL($0) },
             advanceToNextInputMode: { [weak self] in self?.advanceToNextInputMode() },
-            needsInputModeSwitchKey: { [weak self] in self?.needsInputModeSwitchKey ?? true }
+            needsInputModeSwitchKey: { [weak self] in self?.needsInputModeSwitchKey ?? true },
+            configureSwitchButton: { [weak self] button in
+                guard let self else { return }
+                button.addTarget(self, action: #selector(self.handleInputModeList(from:with:)),
+                                 for: .allTouchEvents)
+            }
         )
 
         let root = KeyboardRootView(actions: actions)
