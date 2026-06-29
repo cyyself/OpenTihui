@@ -254,7 +254,7 @@ in the Simulator. Please keep UI strings localized via the String Catalogs
 - The M-RoPE models (Qwen-VL) can't use llama.cpp's in-place context shift, so
   compaction is done at the app level by dropping and replaying turns.
 - **Configuration is stored as plain JSON** under **Documents/Config**
-  (`settings.json`, `shortcuts.json`, `endpoints.json`, `models.json`) — visible
+  (`settings.json`, `shortcuts.json`, `remote-endpoints.json`, `models.json`) — visible
   and editable in the Files app. **Chat history is private** (Application Support,
   not exposed in Files). No iCloud / cloud sync; everything is on-device. API keys
-  (`endpoints.json`) are written with complete file protection.
+  (`remote-endpoints.json`) are written with complete file protection.
