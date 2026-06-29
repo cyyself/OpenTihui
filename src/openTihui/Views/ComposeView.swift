@@ -270,13 +270,17 @@ struct ComposeView: View {
             let seeded = chat.rememberedVariableValue(v.name, scope: variableScope, default: v.isSelection ? v.defaultValue : "")
             if !seeded.isEmpty { variableValues[v.name] = seeded }
         }
-        if request.useClipboard, let clip = UIPasteboard.general.string,
+        // Auto-fill from the clipboard only when enabled AND no text was handed
+        // over (nothing was selected / before the cursor when compose opened).
+        if composeConfig.autoClipboard,
+           context.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+           let clip = UIPasteboard.general.string,
            !clip.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             context = clip
         }
-        // Auto-pick the latest screenshot taken in the last 30s (asks for Photos
-        // access) when the model can use images.
-        if chat.composeVisionAvailable {
+        // Auto-attach the latest screenshot taken in the last 30s (asks for Photos
+        // access) — only when enabled and the model can use images.
+        if composeConfig.autoScreenshot, chat.composeVisionAvailable {
             preparing = true
             if let img = await ScreenshotSuggester.recentScreenshot(),
                let data = img.jpegData(compressionQuality: 0.9),

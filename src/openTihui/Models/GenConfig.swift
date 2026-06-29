@@ -27,9 +27,10 @@ struct GenConfig: Codable, Hashable {
     var discardContext: Bool = false
     /// Auto-fill the composer from the clipboard when the chat opens.
     var autoClipboard: Bool = false
-    /// Auto-attach a screenshot taken in the last 30s when a message is sent
-    /// (requires Photos access).
-    var autoScreenshot: Bool = false
+    /// Auto-attach a screenshot taken in the last 30s when a message is sent /
+    /// when "Generate in app" opens (requires Photos access). On by default;
+    /// text-only shortcuts turn it off.
+    var autoScreenshot: Bool = true
     /// Downscale attached images so their longest side is at most this many
     /// pixels before sending to the model — fewer vision tokens, faster encode,
     /// smaller storage. 0 = keep the original resolution.

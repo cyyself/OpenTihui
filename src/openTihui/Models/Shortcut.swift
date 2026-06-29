@@ -135,7 +135,8 @@ extension Shortcut {
         var c = GenConfig.default
         c.discardContext = true
         c.thinkingEffort = .off
-        c.loadProjector = false   // text shortcuts don't need the vision projector
+        c.loadProjector = false     // text shortcuts don't need the vision projector
+        c.autoScreenshot = false    // …and shouldn't pull in screenshots (keeps them text-only)
         return c
     }
 
@@ -166,7 +167,7 @@ extension Shortcut {
             Shortcut(name: String(localized: "Image Recognition"), icon: "photo.on.rectangle.angled",
                      systemPrompt: String(localized: "Carefully describe the image the user sends: identify the main objects, any visible text, and the overall scene. Be concise and factual."),
                      modelPath: nil,
-                     config: { var c = statelessConfig; c.contextLength = 8192; c.loadProjector = true; return c }(),
+                     config: { var c = statelessConfig; c.contextLength = 8192; c.loadProjector = true; c.autoScreenshot = true; return c }(),
                      allowInKeyboard: false),
         ]
     }
