@@ -41,6 +41,10 @@ struct ComposeView: View {
     @State private var modelSelection: String?      // nil = inherit the chat's current model
     @State private var settingsLoaded = false
 
+    // Per-line result selection (default = all lines until the user picks one).
+    @State private var selectedLines: Set<Int> = []
+    @State private var hasManuallySelected = false
+
     private var variables: [PromptVariable] { PromptTemplate.variables(in: rawInstruction, defs: variableDefs) }
 
     init(request: ComposeRequest) {
@@ -109,17 +113,46 @@ struct ComposeView: View {
                 }
 
                 if !result.isEmpty || isBusy {
-                    Section("Result") {
-                        TextEditor(text: $result).frame(minHeight: 120).font(.body)
-                        Button {
-                            UIPasteboard.general.string = result
-                            copied = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { dismiss() }
-                        } label: {
-                            Label(copied ? "Copied — switch back & tap Insert" : "Use this result",
+                    let split = splitReasoning(result)
+                    let answerLines = split.answer.components(separatedBy: "\n").enumerated()
+                        .filter { !$0.element.trimmingCharacters(in: .whitespaces).isEmpty }
+                        .map { (index: $0.offset, text: $0.element) }
+                    Section {
+                        if split.thinking != nil || split.isThinking {
+                            ThinkingView(text: split.thinking ?? "", isLive: isBusy && split.isThinking)
+                        }
+                        // Each generated line is selectable (Markdown-rendered).
+                        ForEach(answerLines, id: \.index) { line in
+                            Button { toggleLine(line.index) } label: {
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: isLineSelected(line.index) ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(isLineSelected(line.index) ? Color.accentColor : Color.secondary)
+                                    Text(inlineMarkdown(line.text)).foregroundStyle(.primary)
+                                    Spacer(minLength: 0)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isBusy)
+                        }
+                    } header: {
+                        HStack {
+                            Text("Result")
+                            Spacer()
+                            if !isBusy && !answerLines.isEmpty {
+                                Button("Select All") { selectAllLines(answerLines.map { $0.index }) }
+                                Text("·").foregroundStyle(.tertiary)
+                                Button("None") { selectNoLines() }
+                            }
+                        }
+                        .textCase(nil)
+                    }
+
+                    Section {
+                        Button { copySelected(answerLines) } label: {
+                            Label(copied ? "Copied — switch back & tap Insert" : "Use selected lines",
                                   systemImage: copied ? "checkmark.circle.fill" : "doc.on.doc")
                         }
-                        .disabled(result.isEmpty || isBusy)
+                        .disabled(isBusy || !answerLines.contains { isLineSelected($0.index) })
                     }
                 }
             }
@@ -317,6 +350,7 @@ struct ComposeView: View {
         isBusy = true
         result = ""
         copied = false
+        selectedLines = []; hasManuallySelected = false   // new result → default to all lines
         let instr = variables.isEmpty ? instruction
             : PromptTemplate.resolve(rawInstruction, defs: variableDefs, values: variableValues)
         result = await chat.composeGenerate(request: instr, context: context, imagePaths: imagePaths,
@@ -324,5 +358,43 @@ struct ComposeView: View {
             result = partial
         }
         isBusy = false
+    }
+
+    // MARK: result line selection + rich-text copy
+
+    private func isLineSelected(_ i: Int) -> Bool { hasManuallySelected ? selectedLines.contains(i) : true }
+
+    private func toggleLine(_ i: Int) {
+        if hasManuallySelected {
+            if selectedLines.contains(i) { selectedLines.remove(i) } else { selectedLines.insert(i) }
+        } else {
+            selectedLines = [i]           // first pick from the "all selected" default → just this line
+            hasManuallySelected = true
+        }
+    }
+
+    private func selectAllLines(_ indices: [Int]) { selectedLines = Set(indices); hasManuallySelected = true }
+    private func selectNoLines() { selectedLines = []; hasManuallySelected = true }
+
+    /// Inline Markdown (bold/italic/code/links) for a single result line.
+    private func inlineMarkdown(_ s: String) -> AttributedString {
+        (try? AttributedString(markdown: s,
+                               options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(s)
+    }
+
+    /// Copy the selected lines as **rich text** (RTF) + a plain-text fallback (no
+    /// raw Markdown), then dismiss so the user can Insert it via the keyboard.
+    private func copySelected(_ lines: [(index: Int, text: String)]) {
+        let chosen = lines.filter { isLineSelected($0.index) }.map { $0.text }
+        guard !chosen.isEmpty else { return }
+        let attr = MarkdownAttributed.make(chosen.joined(separator: "\n"), color: .label)
+        var item: [String: Any] = ["public.utf8-plain-text": attr.string]
+        if let rtf = try? attr.data(from: NSRange(location: 0, length: attr.length),
+                                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]) {
+            item["public.rtf"] = rtf
+        }
+        UIPasteboard.general.items = [item]
+        copied = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { dismiss() }
     }
 }

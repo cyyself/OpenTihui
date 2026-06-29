@@ -601,9 +601,9 @@ final class ChatViewModel: ObservableObject {
             turns.append(ChatTurn(role: .user, text: userText, imagePaths: imagePaths))
             var full = ""
             for await ev in OpenAIClient.stream(endpoint: endpoint, turns: turns, config: cfg) {
-                if case .token(let p) = ev { full += p; onUpdate(splitReasoning(full).answer) }
+                if case .token(let p) = ev { full += p; onUpdate(full) }
             }
-            return splitReasoning(full).answer
+            return full
         }
 
         guard let model = localModel else { return "" }
@@ -621,7 +621,7 @@ final class ChatViewModel: ObservableObject {
         let delta = userDelta(text: userText, nMedia: imagePaths.count, first: true)
         var full = ""
         for await ev in engine.generate(prompt: delta, imagePaths: imagePaths, audioPaths: [], params: cfg.generationParams) {
-            if case .token(let p) = ev { full += p; onUpdate(splitReasoning(full).answer) }
+            if case .token(let p) = ev { full += p; onUpdate(full) }
         }
         // Restore the open conversation: reload its model/context if compose used a
         // different one (loadModel replays history), else just rebuild the KV cache.
@@ -630,7 +630,7 @@ final class ChatViewModel: ObservableObject {
         } else {
             await replayHistory()
         }
-        return splitReasoning(full).answer
+        return full
     }
 
     // MARK: Persistence
