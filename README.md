@@ -258,3 +258,8 @@ in the Simulator. Please keep UI strings localized via the String Catalogs
   and editable in the Files app. **Chat history is private** (Application Support,
   not exposed in Files). No iCloud / cloud sync; everything is on-device. API keys
   (`endpoints.json`) are written with complete file protection.
+
+## License
+
+[MIT](LICENSE) © 2026 Yangyu Chen. Built on
+[llama.cpp](https://github.com/ggml-org/llama.cpp) and ggml (also MIT).
