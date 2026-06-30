@@ -51,11 +51,11 @@ struct GenConfigEditor: View {
 
         Section {
             Toggle(isOn: $config.autoClipboard) { Label("Auto-fill from clipboard", systemImage: "doc.on.clipboard") }
-            Toggle(isOn: $config.autoScreenshot) { Label("Auto-add recent screenshot", systemImage: "camera.viewfinder") }
+            Toggle(isOn: $config.autoScreenshot) { Label("Suggest recent screenshot", systemImage: "camera.viewfinder") }
         } header: {
             Text("Auto context")
         } footer: {
-            Text("When the chat opens, prefill the composer with the clipboard text. When you send, attach a screenshot taken in the last 30 seconds (asks for Photos access). Works in normal chats and shortcuts.")
+            Text("When the chat opens, prefill the composer with the clipboard text. After you take a screenshot, offer to attach it (tap Add) — it's never attached without your tap. Asks for Photos access. Works in normal chats and shortcuts.")
         }
 
         Section {

@@ -38,7 +38,7 @@ struct ChatDetailView: View {
         // Pin the composer above the keyboard so the send button is never hidden.
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
-                if let shot = screenshots.image, chat.supportsVision { screenshotFloat(shot) }
+                if let shot = screenshots.image, chat.supportsVision, chat.config.autoScreenshot { screenshotFloat(shot) }
                 if !chat.promptVariables.isEmpty { variableBar }
                 if !pendingAttachments.isEmpty { pendingAttachmentBar }
                 inputBar
@@ -434,21 +434,11 @@ struct ChatDetailView: View {
 
     private func sendMessage() {
         let text = input
-        var atts = pendingAttachments
+        let atts = pendingAttachments     // only what the user actually attached (incl. an Added screenshot)
         input = ""
         pendingAttachments = []
         photoItems = []
-        // Auto-attach a recent screenshot *before* any (slow) model load, so the
-        // 30s window is measured from when you sent — not after the load finishes.
-        let wantsScreenshot = chat.config.autoScreenshot && chat.canUseImages
-            && !atts.contains(where: { $0.kind == .image })
         Task {
-            if wantsScreenshot,
-               let img = await ScreenshotSuggester.recentScreenshot(),
-               let data = img.jpegData(compressionQuality: 0.9),
-               let url = AttachmentStore.saveImage(data, maxDimension: chat.config.imageMaxDimension) {
-                atts.append(Attachment(kind: .image, url: url))
-            }
             if !chat.isModelReady { await chat.ensureModelLoaded() }
             await chat.compactIfNeeded()
             chat.send(text: text, attachments: atts)
