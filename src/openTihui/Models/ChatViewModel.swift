@@ -386,16 +386,20 @@ final class ChatViewModel: ObservableObject {
         }
 
         if contextStart > messages.count { contextStart = 0 }
-        let end = min(endIndex ?? messages.count, messages.count)
-        var i = contextStart
+        // Iterate a snapshot: `messages` can be mutated on the main actor across the
+        // `await`s below (a new send, a conversation switch, etc.), which would make
+        // a live `messages[i]` go out of range.
+        let msgs = messages
+        let end = min(endIndex ?? msgs.count, msgs.count)
+        var i = min(contextStart, msgs.count)
         while i < end {
-            let m = messages[i]
+            let m = msgs[i]
             if m.role == .user {
                 let delta = userDelta(text: m.text, nMedia: m.attachments.count, first: isFirstUserTurn)
                 try? await engine.evaluate(prompt: delta, imagePaths: m.imagePaths, audioPaths: m.audioPaths)
                 isFirstUserTurn = false
                 if i + 1 < end {
-                    let a = messages[i + 1]
+                    let a = msgs[i + 1]
                     if a.role == .assistant, !a.failed, !a.text.isEmpty {
                         try? await engine.evaluate(prompt: a.text, imagePaths: [], audioPaths: [])
                         i += 2
