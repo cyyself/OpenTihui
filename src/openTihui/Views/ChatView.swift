@@ -414,12 +414,17 @@ struct ChatDetailView: View {
                     Image(systemName: "stop.circle.fill").font(.system(size: 34)).foregroundStyle(.red)
                 }
             } else {
+                let canSend = !(input.trimmingCharacters(in: .whitespaces).isEmpty && pendingAttachments.isEmpty)
                 Button { sendMessage() } label: {
-                    Image(systemName: "arrow.up.circle.fill").font(.system(size: 34))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(Color.accentColor)
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 38, height: 38)
+                        .sendButtonGlass()
+                        .shadow(color: Color.accentColor.opacity(canSend ? 0.45 : 0), radius: 6, y: 2)
+                        .opacity(canSend ? 1 : 0.45)
                 }
-                .disabled(input.trimmingCharacters(in: .whitespaces).isEmpty && pendingAttachments.isEmpty)
+                .disabled(!canSend)
             }
         }
         .padding(.horizontal).padding(.vertical, 8)
@@ -470,6 +475,17 @@ private extension View {
             self.glassEffect(interactive ? .regular.interactive() : .regular, in: shape)
         } else {
             self.background(.regularMaterial, in: shape)
+        }
+    }
+
+    /// The send button: an accent-tinted Liquid Glass circle on iOS 26+, a solid
+    /// accent circle on older systems.
+    @ViewBuilder
+    func sendButtonGlass() -> some View {
+        if #available(iOS 26.0, *) {
+            self.glassEffect(.regular.tint(.accentColor).interactive(), in: Circle())
+        } else {
+            self.background(Color.accentColor, in: Circle())
         }
     }
 }
