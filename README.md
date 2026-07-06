@@ -132,9 +132,11 @@ straight from Hugging Face.
 ### openTihui keyboard (system-wide)
 
 A custom keyboard extension lets you generate text **in any app** without leaving
-the field you're typing in. Because iOS caps keyboard-extension memory (it can't
-run a model itself), it's a **launcher**: it shows your **Shortcuts** as chips and
-hands the work to the openTihui app.
+the field you're typing in. It's a **real keyboard** — English QWERTY with
+numbers/symbols layers (typing works even without Full Access) — and **swiping
+up** (or tapping **✨**) reveals the AI panel. Because iOS caps keyboard-extension
+memory (it can't run a model itself), the panel is a **launcher**: it shows your
+**Shortcuts** as chips and hands the work to the openTihui app.
 
 - The keyboard's chips are your **Shortcuts** (Polite, Shorter, Fix Grammar, Reply,
   Translator, … — add your own in the Shortcuts tab). Tap one (or **Generate in

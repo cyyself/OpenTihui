@@ -2,10 +2,10 @@
 //  KeyboardRootView.swift
 //  openTihui Keyboard
 //
-//  A launcher keyboard: it shows your Shortcuts as chips and hands the text
-//  before the cursor to the openTihui app to generate (where you can tune
-//  options, pick a model, etc.). The app copies the result back, and "Insert
-//  result" drops it in.
+//  A typing keyboard (English letters + numbers/symbols layers) with an AI
+//  panel: swipe up (or tap ✨) to show your Shortcuts as chips and hand the
+//  text before the cursor to the openTihui app to generate. The app copies the
+//  result back, and "Paste" drops it in. Typing works without Full Access.
 //
 
 import SwiftUI
@@ -17,7 +17,15 @@ struct KeyboardRootView: View {
     @State private var config = KBConfig.load()
     @State private var status: Status = .idle
 
+    // Typing state
+    @State private var showActions = false          // false = keys, true = AI panel
+    @State private var layer: KeyLayer = .letters
+    @State private var shifted = false
+    @State private var capsLock = false
+    @State private var lastShiftTap = Date.distantPast
+
     private enum Status: Equatable { case idle, imported, error(String) }
+    private enum KeyLayer { case letters, numbers, symbols }
 
     /// Fallback chips before the user imports their shortcut selection.
     private static let defaultActions: [KBAction] = [
@@ -35,20 +43,42 @@ struct KeyboardRootView: View {
     var body: some View {
         VStack(spacing: 8) {
             header
-            if !actions.hasFullAccess() {
-                fullAccessNotice
+            if showActions {
+                actionsPanel
             } else {
-                actionChips
-                bottomRow
-                statusLine
+                typingPad
             }
         }
         .padding(10)
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 280)   // taller: shortcuts wrap into a vertical grid
+        .frame(minHeight: 280)
         .background(Color(.systemGray6))
         .environment(\.locale, locale)
         .task { autoImportIfNeeded() }
+    }
+
+    /// Shortcut chips + hand-off actions, revealed by swiping up on the keys
+    /// (or tapping ✨). Swipe down (or tap ⌨) to get back to typing.
+    private var actionsPanel: some View {
+        VStack(spacing: 8) {
+            actionChips
+            bottomRow
+            if actions.hasFullAccess() {
+                statusLine
+            } else {
+                Text("Settings ▸ General ▸ Keyboard ▸ Keyboards ▸ openTihui — needed to load your shortcuts and insert results.")
+                    .font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            }
+        }
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 25).onEnded { v in
+                if v.translation.height > 35, abs(v.translation.height) > abs(v.translation.width) {
+                    withAnimation(.easeInOut(duration: 0.2)) { showActions = false }
+                }
+            }
+        )
+        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     private var header: some View {
@@ -67,6 +97,130 @@ struct KeyboardRootView: View {
             .buttonStyle(.plain)
             keyButton("delete.left") { actions.deleteBackward() }
         }
+    }
+
+    // MARK: typing pad
+
+    /// QWERTY keys with numbers/symbols layers. Swipe up to reveal the AI panel.
+    private var typingPad: some View {
+        GeometryReader { geo in
+            let gap: CGFloat = 6
+            let unit = (geo.size.width - gap * 9) / 10
+            let keyH = (geo.size.height - gap * 3) / 4
+            VStack(spacing: gap) {
+                switch layer {
+                case .letters:
+                    charRow("qwertyuiop", unit: unit, gap: gap, h: keyH)
+                    charRow("asdfghjkl", unit: unit, gap: gap, h: keyH)
+                    HStack(spacing: gap) {
+                        controlKey(icon: capsLock ? "capslock.fill" : (shifted ? "shift.fill" : "shift"),
+                                   width: unit * 1.4, h: keyH, action: tapShift)
+                        Spacer(minLength: 0)
+                        charRow("zxcvbnm", unit: unit, gap: gap, h: keyH)
+                        Spacer(minLength: 0)
+                        controlKey(icon: "delete.left", width: unit * 1.4, h: keyH) { actions.deleteBackward() }
+                    }
+                case .numbers:
+                    charRow("1234567890", unit: unit, gap: gap, h: keyH)
+                    charRow("-/:;()$&@“", unit: unit, gap: gap, h: keyH)
+                    HStack(spacing: gap) {
+                        controlKey(text: "#+=", width: unit * 1.4, h: keyH) { layer = .symbols }
+                        Spacer(minLength: 0)
+                        charRow(".,?!’", unit: unit * 1.3, gap: gap, h: keyH)
+                        Spacer(minLength: 0)
+                        controlKey(icon: "delete.left", width: unit * 1.4, h: keyH) { actions.deleteBackward() }
+                    }
+                case .symbols:
+                    charRow("[]{}#%^*+=", unit: unit, gap: gap, h: keyH)
+                    charRow("_\\|~<>€£¥·", unit: unit, gap: gap, h: keyH)
+                    HStack(spacing: gap) {
+                        controlKey(text: "123", width: unit * 1.4, h: keyH) { layer = .numbers }
+                        Spacer(minLength: 0)
+                        charRow(".,?!’", unit: unit * 1.3, gap: gap, h: keyH)
+                        Spacer(minLength: 0)
+                        controlKey(icon: "delete.left", width: unit * 1.4, h: keyH) { actions.deleteBackward() }
+                    }
+                }
+                HStack(spacing: gap) {
+                    controlKey(text: layer == .letters ? "123" : "ABC", width: unit * 1.6, h: keyH) {
+                        layer = (layer == .letters) ? .numbers : .letters
+                    }
+                    controlKey(icon: "sparkles", width: unit * 1.3, h: keyH) {
+                        withAnimation(.easeInOut(duration: 0.2)) { showActions = true }
+                    }
+                    Button { actions.insert(" ") } label: {
+                        Text(verbatim: "space").font(.system(size: 15)).foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity).frame(height: keyH)
+                            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 6))
+                            .shadow(color: .black.opacity(0.15), radius: 0, y: 1)
+                    }
+                    .buttonStyle(.plain)
+                    controlKey(icon: "return", width: unit * 2.0, h: keyH) { actions.insert("\n") }
+                }
+            }
+        }
+        .frame(height: 204)
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 25).onEnded { v in
+                if v.translation.height < -35, abs(v.translation.height) > abs(v.translation.width) {
+                    withAnimation(.easeInOut(duration: 0.2)) { showActions = true }
+                }
+            }
+        )
+    }
+
+    /// A centered row of character keys.
+    private func charRow(_ chars: String, unit: CGFloat, gap: CGFloat, h: CGFloat) -> some View {
+        HStack(spacing: gap) {
+            ForEach(Array(chars), id: \.self) { c in
+                let s = String(c)
+                Button { tapChar(s) } label: {
+                    Text(displayChar(s)).font(.system(size: 22)).foregroundStyle(.primary)
+                        .frame(width: unit, height: h)
+                        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 6))
+                        .shadow(color: .black.opacity(0.15), radius: 0, y: 1)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func controlKey(icon: String? = nil, text: String? = nil,
+                            width: CGFloat, h: CGFloat, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Group {
+                if let icon { Image(systemName: icon).font(.system(size: 17)) }
+                else if let text { Text(verbatim: text).font(.system(size: 15)) }
+            }
+            .foregroundStyle(.primary)
+            .frame(width: width, height: h)
+            .background(Color(.systemGray4), in: RoundedRectangle(cornerRadius: 6))
+            .shadow(color: .black.opacity(0.15), radius: 0, y: 1)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func displayChar(_ c: String) -> String {
+        (layer == .letters && (shifted || capsLock)) ? c.uppercased() : c
+    }
+
+    private func tapChar(_ c: String) {
+        actions.insert(displayChar(c))
+        if shifted && !capsLock { shifted = false }   // shift applies to one letter
+    }
+
+    /// Tap toggles shift; a quick double-tap locks caps.
+    private func tapShift() {
+        let now = Date()
+        if now.timeIntervalSince(lastShiftTap) < 0.35 {
+            capsLock = true; shifted = true
+        } else if capsLock {
+            capsLock = false; shifted = false
+        } else {
+            shifted.toggle()
+        }
+        lastShiftTap = now
     }
 
     private var actionChips: some View {
@@ -91,6 +245,13 @@ struct KeyboardRootView: View {
 
     private var bottomRow: some View {
         HStack(spacing: 8) {
+            Button { withAnimation(.easeInOut(duration: 0.2)) { showActions = false } } label: {
+                Image(systemName: "keyboard")
+                    .font(.callout).frame(width: 44).padding(.vertical, 9)
+                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+
             Button { openApp(nil) } label: {
                 Label("Generate in app", systemImage: "arrow.up.forward.app")
                     .font(.callout).frame(maxWidth: .infinity).padding(.vertical, 9)
@@ -136,22 +297,6 @@ struct KeyboardRootView: View {
         case .error(let m):
             Text(m).font(.caption2).foregroundStyle(.red).lineLimit(2)
         }
-    }
-
-    private var fullAccessNotice: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "lock.shield").font(.title2).foregroundStyle(.secondary)
-            Text("Turn on “Allow Full Access”")
-                .font(.subheadline.weight(.semibold))
-            Text("Settings ▸ General ▸ Keyboard ▸ Keyboards ▸ openTihui — needed to load your shortcuts and insert results.")
-                .font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            if actions.needsInputModeSwitchKey() {
-                Button { actions.advanceToNextInputMode() } label: {
-                    Label("Switch keyboard", systemImage: "globe")
-                }.buttonStyle(.bordered)
-            }
-        }
-        .frame(maxWidth: .infinity).padding(.vertical, 12)
     }
 
     // MARK: actions
