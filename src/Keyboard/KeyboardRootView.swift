@@ -51,7 +51,7 @@ struct KeyboardRootView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 280)
+        .frame(minHeight: 280, alignment: .top)   // pin header — no shift when switching modes
         .background(Color(.systemGray6))
         .environment(\.locale, locale)
         .task { autoImportIfNeeded() }
@@ -159,7 +159,7 @@ struct KeyboardRootView: View {
                 }
             }
         }
-        .frame(height: 204)
+        .frame(minHeight: 204, maxHeight: .infinity)   // fill like the AI panel does
         .contentShape(Rectangle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 25).onEnded { v in
