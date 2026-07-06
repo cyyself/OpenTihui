@@ -19,6 +19,14 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Photos you capture are sent to the on-device model for multimodal inference.</string>
 
+	<!-- Users can add OpenAI-compatible endpoints on their LAN (e.g. llama-server). -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>openTihui connects to model servers on your local network when you add a LAN API endpoint.</string>
+
+	<!-- Only standard HTTPS (exempt) encryption is used. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
 	<!-- URL scheme used by the openTihui keyboard extension to hand a writing
 	     task to the app for on-device (or API) generation. -->
 	<!-- Open a openTihui shortcut (.json) shared from another device/app. -->

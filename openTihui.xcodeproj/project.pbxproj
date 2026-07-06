@@ -64,8 +64,8 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		SY00000000000000000001 /* openTihui */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = src/openTihui; sourceTree = "<group>"; };
-		SY00000000000000000002 /* Keyboard */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (EX00000000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = src/Keyboard; sourceTree = "<group>"; };
+		SY00000000000000000001 /* src/openTihui */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = src/openTihui; sourceTree = "<group>"; };
+		SY00000000000000000002 /* src/Keyboard */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (EX00000000000000000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = src/Keyboard; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,8 +90,8 @@
 		GR00000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				SY00000000000000000001 /* openTihui */,
-				SY00000000000000000002 /* Keyboard */,
+				SY00000000000000000001 /* src/openTihui */,
+				SY00000000000000000002 /* src/Keyboard */,
 				GR00000000000000000002 /* Frameworks */,
 				GR00000000000000000003 /* Products */,
 			);
@@ -133,7 +133,7 @@
 				TD00000000000000000001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				SY00000000000000000001 /* openTihui */,
+				SY00000000000000000001 /* src/openTihui */,
 			);
 			name = openTihui;
 			productName = openTihui;
@@ -153,7 +153,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				SY00000000000000000002 /* Keyboard */,
+				SY00000000000000000002 /* src/Keyboard */,
 			);
 			name = Keyboard;
 			productName = Keyboard;
@@ -309,7 +309,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = openTihui;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Audio you record is sent to the on-device model for multimodal inference.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Selected photos are sent to the on-device model for multimodal inference.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -342,7 +341,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = openTihui;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Audio you record is sent to the on-device model for multimodal inference.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Selected photos are sent to the on-device model for multimodal inference.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

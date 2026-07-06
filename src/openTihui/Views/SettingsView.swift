@@ -73,6 +73,14 @@ struct SettingsView: View {
                         Image(systemName: "arrow.up.right").font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                Link(destination: URL(string: "https://github.com/cyyself/OpenTihui/blob/master/PRIVACY.md")!) {
+                    HStack {
+                        Label("Privacy Policy", systemImage: "hand.raised")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "arrow.up.right").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
             } header: {
                 Text("Project")
             } footer: {

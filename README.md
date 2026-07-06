@@ -205,7 +205,7 @@ src/openTihui/
 src/Keyboard/                  custom keyboard extension (app-extension target)
   KeyboardViewController.swift host UIInputViewController + host-field bridge
   KeyboardRootView.swift       SwiftUI keyboard UI (action chips, hand-off)
-  KeyboardAI.swift             standalone OpenAI-compatible client + self-config
+  KeyboardAI.swift             chip config imported from the app (keyboard has no network code)
   Info.plist                   NSExtension (keyboard-service, RequestsOpenAccess)
 design/AppIcon.tex             TikZ source for the app icon (regen: `make icon`)
 Screenshots/                   README screenshots
@@ -260,6 +260,11 @@ in the Simulator. Please keep UI strings localized via the String Catalogs
   and editable in the Files app. **Chat history is private** (Application Support,
   not exposed in Files). No iCloud / cloud sync; everything is on-device. API keys
   (`endpoints.json`) are written with complete file protection.
+
+## Privacy
+
+Everything runs on-device; no analytics, no tracking, no server. Data leaves the
+device only toward endpoints **you** configure. See [PRIVACY.md](PRIVACY.md).
 
 ## License
 
