@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Runtime lookup of the shared App Group (value = APP_GROUP_ID build setting). -->
+	<key>AppGroupID</key>
+	<string>$(APP_GROUP_ID)</string>
+
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>

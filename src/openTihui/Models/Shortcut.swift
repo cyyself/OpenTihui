@@ -125,6 +125,7 @@ final class ShortcutStore: ObservableObject {
         if let data = try? JSONEncoder().encode(shortcuts) {
             try? data.write(to: fileURL, options: .atomic)
         }
+        KeyboardSync.push(shortcuts: shortcuts)   // keep the keyboard's chips in sync
     }
 }
 

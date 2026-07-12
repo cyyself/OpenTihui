@@ -35,6 +35,7 @@ struct KeyboardSettingsView: View {
 
     private func setSelected(_ list: [Shortcut]) {
         settings.keyboardShortcutIDs = list.map { $0.id.uuidString }
+        KeyboardSync.push(shortcuts: shortcuts.shortcuts)   // auto-sync via App Group
     }
 
     var body: some View {
@@ -138,12 +139,10 @@ struct KeyboardSettingsView: View {
     }
 
     private func copySetup() {
-        let actions = selected.map { s in
-            KBActionPayload(title: s.name, icon: s.icon, instruction: s.systemPrompt,
-                            useClipboard: s.config.autoClipboard, useScreenshot: s.config.autoScreenshot)
-        }
-        let lang = Bundle.main.preferredLocalizations.first ?? "en"
-        UIPasteboard.general.string = KBSetupPayload(actions: actions, lang: lang).encoded()
+        // Clipboard fallback for builds without the App Group; also refresh the
+        // shared container so either channel delivers the same setup.
+        UIPasteboard.general.string = KeyboardSync.payload(shortcuts: shortcuts.shortcuts).encoded()
+        KeyboardSync.push(shortcuts: shortcuts.shortcuts)
         withAnimation { copied = true }
     }
 }

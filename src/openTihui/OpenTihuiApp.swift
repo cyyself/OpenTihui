@@ -43,6 +43,7 @@ struct OpenTihuiApp: App {
                 .environmentObject(chat)
                 .task {
                     InferenceEngine.warmGPUAvailability()   // probe Metal off-main so Settings never blocks
+                    KeyboardSync.push(shortcuts: shortcuts.shortcuts)   // refresh keyboard setup (e.g. language change)
                     if SmokeTest.isEnabled { SmokeTest.run() }
                 }
                 .onOpenURL { url in

@@ -35,8 +35,10 @@ no analytics, contains no trackers and no ads, and has no server of its own.
 - Typing works entirely locally. Text near the cursor is handed to the openTihui
   app **only when you tap a shortcut or "Generate in app"**, and is processed as
   described above.
-- **Full Access is used solely for the clipboard**: importing your shortcut
-  setup from the app, and pasting generated results back. Nothing else.
+- **Full Access is used solely to exchange data with the openTihui app**: your
+  shortcut setup and generated results are shared through a private App Group
+  container between the app and the keyboard (with the clipboard as a fallback
+  for the same data). Nothing else.
 
 ## Permissions
 

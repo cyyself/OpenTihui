@@ -394,6 +394,7 @@ struct ComposeView: View {
             item["public.rtf"] = rtf
         }
         UIPasteboard.general.items = [item]
+        KeyboardSync.publishResult(attr.string)   // App Group hand-off — keyboard "Paste" works without clipboard prompts
         copied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { dismiss() }
     }

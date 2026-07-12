@@ -3,12 +3,37 @@
 //  openTihui Keyboard
 //
 //  The keyboard is a launcher: it shows the user's Shortcuts as chips and hands
-//  the task to the app for generation (no in-keyboard inference). This file just
-//  holds the chip config, imported from the app via the clipboard setup payload
-//  and stored in the extension's own UserDefaults (no App Group).
+//  the task to the app for generation (no in-keyboard inference). The chip
+//  config arrives from the app via the shared App Group container (auto-sync),
+//  with the clipboard setup payload as a fallback for builds without the
+//  entitlement; it's cached in the extension's own UserDefaults.
 //
 
 import Foundation
+
+/// The shared App Group container (the app writes, the keyboard reads).
+/// Reads require Full Access; without it — or without the entitlement — every
+/// accessor just returns nil and the clipboard flow takes over.
+enum KBShared {
+    static var defaults: UserDefaults? {
+        guard let id = Bundle.main.object(forInfoDictionaryKey: "AppGroupID") as? String,
+              !id.isEmpty, id.hasPrefix("group.") else { return nil }
+        return UserDefaults(suiteName: id)
+    }
+
+    /// The latest setup pushed by the app (shortcut chips + language).
+    static func config() -> KBConfig? { KBConfig.parse(defaults?.string(forKey: "kb.payload")) }
+
+    /// A generated result handed over by the app; one-shot and time-limited so
+    /// a stale result is never inserted.
+    static func takeResult(maxAge: TimeInterval = 600) -> String? {
+        guard let d = defaults, let text = d.string(forKey: "kb.result"), !text.isEmpty else { return nil }
+        let at = d.double(forKey: "kb.resultAt")
+        d.removeObject(forKey: "kb.result")
+        guard Date().timeIntervalSince1970 - at <= maxAge else { return nil }
+        return text
+    }
+}
 
 /// A keyboard quick action — mirrors a openTihui Shortcut.
 struct KBAction: Codable, Equatable, Identifiable {

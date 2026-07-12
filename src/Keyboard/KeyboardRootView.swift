@@ -337,6 +337,13 @@ struct KeyboardRootView: View {
     private func insertClipboard() {
         // Importing the keyboard setup takes priority if it's on the clipboard.
         if let cfg = KBConfig.parse(actions.clipboard()) { cfg.save(); config = cfg; status = .imported; return }
+        // Prefer a result handed over via the shared App Group (no clipboard
+        // needed, so no iOS paste prompt); fall back to the clipboard.
+        if let result = KBShared.takeResult() {
+            actions.insert(result)
+            status = .idle
+            return
+        }
         guard let text = actions.clipboard(), !text.isEmpty else {
             status = .error("Nothing to insert. Generate in the app first, then come back.")
             return
@@ -353,10 +360,16 @@ struct KeyboardRootView: View {
         }
     }
 
-    /// On first appearance (before any shortcuts are imported), pick up a setup
-    /// payload sitting on the clipboard from the app's "Copy setup" action.
+    /// Refresh the chips on every appearance: prefer the app's setup in the
+    /// shared App Group container (auto-sync); fall back to a setup payload on
+    /// the clipboard (builds without the App Group entitlement).
     private func autoImportIfNeeded() {
-        guard config.actions.isEmpty, actions.hasFullAccess() else { return }
+        guard actions.hasFullAccess() else { return }
+        if let shared = KBShared.config() {
+            if shared != config { shared.save(); config = shared }
+            return
+        }
+        guard config.actions.isEmpty else { return }
         if let cfg = KBConfig.parse(actions.clipboard()) {
             cfg.save(); config = cfg; status = .imported
         }

@@ -142,9 +142,10 @@ memory (it can't run a model itself), the panel is a **launcher**: it shows your
   Translator, … — add your own in the Shortcuts tab). Tap one (or **Generate in
   app**) and the text before the cursor is sent to openTihui via
   `opentihui://compose`. **Pick which shortcuts appear** (no fixed limit — the
-  chips scroll) in **Settings ▸ openTihui Keyboard**, then **Copy setup for
-  keyboard** — switch to the keyboard and it **loads automatically** (or tap the
-  hint to import). The keyboard UI **follows the app's language**.
+  chips scroll) in **Settings ▸ openTihui Keyboard** — the keyboard picks them up
+  **automatically** via a shared App Group container. (On builds without the App
+  Group entitlement, **Copy setup for keyboard** + import in the keyboard is the
+  fallback.) The keyboard UI **follows the app's language**.
 - In the app you **tune the task** — pick options for shortcuts with `$variables`
   (e.g. Translator's from/into language, remembered for next time), edit the text,
   and open **Generation settings** to change the **model, reasoning, context length,
@@ -155,9 +156,13 @@ memory (it can't run a model itself), the panel is a **launcher**: it shows your
   context fills it in automatically.
 
 Enable it in **Settings ▸ General ▸ Keyboard ▸ Keyboards ▸ Add New Keyboard ▸
-openTihui**, then turn on **Allow Full Access** (required to load your shortcuts
-and read the result from the clipboard). No App Group is used — the keyboard keeps
-its own config, so it signs fine with a free Apple account.
+openTihui**, then turn on **Allow Full Access** (required for the keyboard to
+read the shared settings/results — typing works without it). App ⇄ keyboard data
+flows through a private **App Group** container (`APP_GROUP_ID` build setting),
+with the clipboard as a fallback. Forks: change `PRODUCT_BUNDLE_IDENTIFIER` and
+`APP_GROUP_ID` to your own (group IDs are unique per team; App Groups also work
+with free personal teams, and without the entitlement everything falls back to
+the clipboard flow).
 
 ## Building
 

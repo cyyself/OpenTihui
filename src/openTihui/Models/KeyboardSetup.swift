@@ -2,10 +2,11 @@
 //  KeyboardSetup.swift
 //  openTihui
 //
-//  The openTihui keyboard's quick actions are the user's Shortcuts. Since the
-//  keyboard extension can't read the app's stores (no App Group), the chosen
-//  shortcuts + the inline endpoint are handed over as a base64-encoded JSON
-//  payload on the clipboard. The keyboard has matching decode types.
+//  The openTihui keyboard's quick actions are the user's Shortcuts, handed over
+//  as a base64-encoded JSON payload. Primary channel: the shared App Group
+//  container (auto-sync — see KeyboardSync). Fallback: the same payload copied
+//  to the clipboard ("Copy setup" → import in the keyboard), which keeps builds
+//  without the App Group entitlement fully working.
 //
 
 import Foundation
@@ -37,5 +38,46 @@ struct KBSetupPayload: Codable {
               let payload = try? JSONDecoder().decode(KBSetupPayload.self, from: data)
         else { return nil }
         return payload
+    }
+}
+
+/// Pushes the keyboard's configuration (and generated results) into the shared
+/// App Group container so the keyboard picks them up automatically — no
+/// copy/paste needed. Every write is best-effort: on builds without the App
+/// Group entitlement the writes silently do nothing and the clipboard flow
+/// remains the transport.
+enum KeyboardSync {
+    /// Shared defaults, or nil when no App Group is configured for this build.
+    static var sharedDefaults: UserDefaults? {
+        guard let id = Bundle.main.object(forInfoDictionaryKey: "AppGroupID") as? String,
+              !id.isEmpty, id.hasPrefix("group.") else { return nil }
+        return UserDefaults(suiteName: id)
+    }
+
+    /// The payload the keyboard should show, from the current shortcut list +
+    /// the user's keyboard selection (same rules as KeyboardSettingsView).
+    static func payload(shortcuts: [Shortcut]) -> KBSetupPayload {
+        let kb = shortcuts.filter { $0.allowInKeyboard }
+        let ids = AppSettings.shared.keyboardShortcutIDs
+        let selected = ids.isEmpty ? kb : ids.compactMap { id in kb.first { $0.id.uuidString == id } }
+        let actions = selected.map {
+            KBActionPayload(title: $0.name, icon: $0.icon, instruction: $0.systemPrompt,
+                            useClipboard: $0.config.autoClipboard, useScreenshot: $0.config.autoScreenshot)
+        }
+        return KBSetupPayload(actions: actions,
+                              lang: Bundle.main.preferredLocalizations.first ?? "en")
+    }
+
+    /// Write the current keyboard setup to the shared container.
+    static func push(shortcuts: [Shortcut]) {
+        sharedDefaults?.set(payload(shortcuts: shortcuts).encoded(), forKey: "kb.payload")
+    }
+
+    /// Hand a generated result to the keyboard ("Paste" inserts it without
+    /// touching the clipboard). One-shot on the keyboard side.
+    static func publishResult(_ text: String) {
+        guard let d = sharedDefaults else { return }
+        d.set(text, forKey: "kb.result")
+        d.set(Date().timeIntervalSince1970, forKey: "kb.resultAt")
     }
 }
