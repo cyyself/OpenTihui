@@ -1,290 +1,274 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "Clear" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清除"
+  "sourceLanguage": "en",
+  "strings": {
+    "Clear": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清除"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
           }
         }
       }
     },
-    "Fix" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "修正"
+    "Fix": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修正"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "修正"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修正"
           }
         }
       }
     },
-    "Generate in app" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在应用中生成"
+    "Generate in app": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在应用中生成"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在應用程式中生成"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在應用程式中生成"
           }
         }
       }
     },
-    "Import shortcuts from app" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从应用导入快捷指令"
+    "Import shortcuts from app": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从应用导入快捷指令"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "從應用程式匯入快捷指令"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從應用程式匯入快捷指令"
           }
         }
       }
     },
-    "In the app: Settings ▸ openTihui Keyboard ▸ Copy setup, then tap here." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在应用中：设置 ▸ openTihui 键盘 ▸ 拷贝配置，然后点按这里。"
+    "In the app: Settings ▸ openTihui Keyboard ▸ Copy setup, then tap here.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在应用中：设置 ▸ openTihui 键盘 ▸ 拷贝配置，然后点按这里。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在應用程式中：設定 ▸ openTihui 鍵盤 ▸ 拷貝設定，然後點按這裡。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在應用程式中：設定 ▸ openTihui 鍵盤 ▸ 拷貝設定，然後點按這裡。"
           }
         }
       }
     },
-    "Loaded %lld shortcuts" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已加载 %lld 个快捷指令"
+    "Loaded %lld shortcuts": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已加载 %lld 个快捷指令"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已載入 %lld 個快捷指令"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已載入 %lld 個快捷指令"
           }
         }
       }
     },
-    "Nothing to insert. Generate in the app first, then come back." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "没有可插入的内容。请先在应用中生成，然后返回。"
+    "Nothing to insert. Generate in the app first, then come back.": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有可插入的内容。请先在应用中生成，然后返回。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "沒有可插入的內容。請先在應用程式中生成，然後返回。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有可插入的內容。請先在應用程式中生成，然後返回。"
           }
         }
       }
     },
-    "openTihui" : {
-      "comment" : "The name of the openTihui app.",
-      "isCommentAutoGenerated" : true
+    "openTihui": {
+      "comment": "The name of the openTihui app.",
+      "isCommentAutoGenerated": true
     },
-    "Paste" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "粘贴"
+    "Paste": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粘贴"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "貼上"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "貼上"
           }
         }
       }
     },
-    "Polite" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "礼貌"
+    "Polite": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "礼貌"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "禮貌"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "禮貌"
           }
         }
       }
     },
-    "Re-import" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重新导入"
+    "Reply": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回复"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重新匯入"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回覆"
           }
         }
       }
     },
-    "Reply" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "回复"
+    "Settings ▸ General ▸ Keyboard ▸ Keyboards ▸ openTihui — needed to load your shortcuts and insert results.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置 ▸ 通用 ▸ 键盘 ▸ 键盘 ▸ openTihui — 用于加载你的快捷指令和插入结果。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "回覆"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定 ▸ 一般 ▸ 鍵盤 ▸ 鍵盤 ▸ openTihui — 用於載入你的快捷指令和插入結果。"
           }
         }
       }
     },
-    "Settings ▸ General ▸ Keyboard ▸ Keyboards ▸ openTihui — needed to load your shortcuts and insert results." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "设置 ▸ 通用 ▸ 键盘 ▸ 键盘 ▸ openTihui — 用于加载你的快捷指令和插入结果。"
+    "Shorter": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "简短"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定 ▸ 一般 ▸ 鍵盤 ▸ 鍵盤 ▸ openTihui — 用於載入你的快捷指令和插入結果。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "簡短"
           }
         }
       }
     },
-    "Shorter" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "简短"
+    "Showing default actions. In the app: Settings ▸ openTihui Keyboard ▸ Copy setup.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示默认操作。在应用中：设置 ▸ openTihui 键盘 ▸ 拷贝配置。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "簡短"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顯示預設操作。在應用程式中：設定 ▸ openTihui 鍵盤 ▸ 拷貝設定。"
           }
         }
       }
     },
-    "Showing default actions. In the app: Settings ▸ openTihui Keyboard ▸ Copy setup." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示默认操作。在应用中：设置 ▸ openTihui 键盘 ▸ 拷贝配置。"
+    "Switch keyboard": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换键盘"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "顯示預設操作。在應用程式中：設定 ▸ openTihui 鍵盤 ▸ 拷貝設定。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切換鍵盤"
           }
         }
       }
     },
-    "Switch keyboard" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切换键盘"
+    "Tap a shortcut → generate in app → Insert result.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点按快捷指令 → 在应用中生成 → 插入结果。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切換鍵盤"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "點按快捷指令 → 在應用程式中生成 → 插入結果。"
           }
         }
       }
     },
-    "Tap a shortcut → generate in app → Insert result." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "点按快捷指令 → 在应用中生成 → 插入结果。"
+    "Turn on “Allow Full Access”": {
+      "extractionState": "stale",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启“允许完全访问”"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "點按快捷指令 → 在應用程式中生成 → 插入結果。"
-          }
-        }
-      }
-    },
-    "Turn on “Allow Full Access”" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "开启“允许完全访问”"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開啟「允許完全取用」"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟「允許完全取用」"
           }
         }
       }
     }
   },
-  "version" : "1.1"
+  "version": "1.1"
 }

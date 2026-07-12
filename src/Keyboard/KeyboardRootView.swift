@@ -17,8 +17,9 @@ struct KeyboardRootView: View {
     @State private var config = KBConfig.load()
     @State private var status: Status = .idle
 
-    // Typing state
-    @State private var showActions = false          // false = keys, true = AI panel
+    // Typing state. The keys/AI-panel choice is remembered across keyboard
+    // sessions: reopening the keyboard restores whichever was last in use.
+    @State private var showActions = UserDefaults.standard.bool(forKey: "kb.showActions")
     @State private var layer: KeyLayer = .letters
     @State private var shifted = false
     @State private var capsLock = false
@@ -54,6 +55,7 @@ struct KeyboardRootView: View {
         .frame(minHeight: 280, alignment: .top)   // pin header — no shift when switching modes
         .background(Color(.systemGray6))
         .environment(\.locale, locale)
+        .onChange(of: showActions) { _, v in UserDefaults.standard.set(v, forKey: "kb.showActions") }
         .task { autoImportIfNeeded() }
     }
 
@@ -283,13 +285,10 @@ struct KeyboardRootView: View {
                 }
                 .frame(maxWidth: .infinity)
             } else {
-                HStack {
-                    Text("Tap a shortcut → generate in app → Insert result.")
-                        .font(.caption2).foregroundStyle(.secondary)
-                    Spacer()
-                    Button { importConfig() } label: { Label("Re-import", systemImage: "arrow.triangle.2.circlepath") }
-                        .font(.caption2)
-                }
+                // Chips auto-sync from the app via the App Group — no re-import needed.
+                Text("Tap a shortcut → generate in app → Insert result.")
+                    .font(.caption2).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         case .imported:
             Label("Loaded \(config.actions.count) shortcuts", systemImage: "checkmark.circle")
