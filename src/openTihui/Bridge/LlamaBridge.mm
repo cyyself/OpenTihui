@@ -488,13 +488,53 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     bool thinkOpen = false, thinkClosed = false;
     std::string genAccum;
 
+    // Text-level stop backstop: some GGUFs don't flag their turn-end token as
+    // EOG (seen with Gemma, esp. after audio input), and a drifting model can
+    // start simulating new turns — either way generation would never stop.
+    // Emitted text is held back while it could be a partial stop tag, so the
+    // UI never sees "<end_of_" fragments.
+    static const std::vector<std::string> kStopTags = {
+        "<end_of_turn>", "<start_of_turn>", "<|im_end|>", "<|im_start|>"
+    };
+    std::string pendingOut;   // sampled but not yet emitted
+    bool stopTagHit = false;
+    auto emitStr = ^(const std::string &s) {
+        if (s.empty() || !onToken) return;
+        NSString *ns = [NSString stringWithUTF8String:s.c_str()];
+        if (ns.length > 0) onToken(ns);
+    };
+
     while (nGenerated < params.maxTokens && !_stopRequested) {
         llama_token tok = llama_sampler_sample(smpl, _lctx, -1);
 
         if (llama_vocab_is_eog(_vocab, tok)) break;
 
         NSString *piece = [self pieceForToken:tok];
-        if (piece.length > 0 && onToken) onToken(piece);
+        if (piece.length > 0) {
+            pendingOut += piece.UTF8String;
+            // Full stop tag anywhere in the pending text → emit what precedes
+            // it and end the reply (the tag never reaches the KV cache or UI).
+            size_t stopAt = std::string::npos;
+            for (const auto &tag : kStopTags) {
+                size_t p = pendingOut.find(tag);
+                if (p != std::string::npos && (stopAt == std::string::npos || p < stopAt)) stopAt = p;
+            }
+            if (stopAt != std::string::npos) {
+                emitStr(pendingOut.substr(0, stopAt));
+                stopTagHit = true;
+                break;
+            }
+            // Otherwise emit everything that can't be the start of a stop tag.
+            size_t hold = 0;
+            for (const auto &tag : kStopTags) {
+                size_t maxL = std::min(pendingOut.size(), tag.size() - 1);
+                for (size_t l = maxL; l >= 1; --l) {
+                    if (pendingOut.compare(pendingOut.size() - l, l, tag, 0, l) == 0) { hold = std::max(hold, l); break; }
+                }
+            }
+            emitStr(pendingOut.substr(0, pendingOut.size() - hold));
+            pendingOut.erase(0, pendingOut.size() - hold);
+        }
 
         // feed the sampled token back in
         if (![self ensureRoomFor:1]) break;
@@ -526,6 +566,9 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
             }
         }
     }
+
+    // Flush text still held back as a possible partial stop tag (it wasn't one).
+    if (!stopTagHit) emitStr(pendingOut);
 
     llama_sampler_free(smpl);
 
