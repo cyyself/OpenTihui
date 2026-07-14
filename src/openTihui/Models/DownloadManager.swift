@@ -200,15 +200,5 @@ struct RecommendedModel: Identifiable {
                          repo: "unsloth/gemma-4-E4B-it-GGUF",
                          file: "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
                          mmproj: "mmproj-BF16.gguf"),
-        RecommendedModel(name: "Gemma 4 E2B Mobile QAT",
-                         detail: "Smallest Gemma · ternary QAT · runs on CPU",
-                         repo: "unsloth/gemma-4-E2B-it-qat-mobile-GGUF",
-                         file: "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
-                         mmproj: "mmproj-BF16.gguf"),
-        RecommendedModel(name: "Gemma 4 E4B Mobile QAT",
-                         detail: "Larger Gemma · ternary QAT · runs on CPU",
-                         repo: "unsloth/gemma-4-E4B-it-qat-mobile-GGUF",
-                         file: "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
-                         mmproj: "mmproj-BF16.gguf"),
     ]
 }
