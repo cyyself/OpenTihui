@@ -168,6 +168,36 @@ final class ChatViewModel: ObservableObject {
     var isModelReady: Bool { isRemote || (loadedModel != nil && loadedModel?.modelPath == resolvedModel?.modelPath) }
 
     var modelInfo: ModelSnapshot? { modelSnapshot }
+
+    /// Current model selection as a picker tag: "remote:<id>", a local model
+    /// path, or nil (= follow the app-wide default).
+    var modelSelectionTag: String? { currentRemoteEndpoint?.selectionTag ?? pinnedModelPath }
+
+    /// Display name for the "Default" model-picker row.
+    var defaultModelName: String {
+        settings.defaultModelPath.flatMap { mp in models.models.first { $0.modelPath == mp }?.name } ?? "Auto"
+    }
+
+    /// Quick model switch from the chat UI. Mirrors applyChatSettings' model
+    /// handling; if a model was loaded, the new one is loaded (and history
+    /// replayed) right away.
+    func switchModel(_ selection: String?) async {
+        guard !isGenerating, !isReplaying, selection != modelSelectionTag else { return }
+        let wasLoaded = loadedModel != nil
+        if let sel = selection, sel.hasPrefix("remote:") {
+            remoteEndpointID = String(sel.dropFirst("remote:".count))
+            pinnedModelPath = nil
+            if loadedModel != nil { unload() }   // free the local model; remote needs none
+        } else {
+            remoteEndpointID = nil
+            pinnedModelPath = selection
+        }
+        persistCurrent()
+        guard !isRemote else { return }
+        if wasLoaded, !isModelReady, let model = resolvedModel {
+            await loadModel(model)               // replays this chat's history
+        }
+    }
     var supportsVision: Bool { isRemote ? (currentRemoteEndpoint?.supportsVision ?? false) : (modelSnapshot?.supportsVision ?? false) }
     var supportsAudio: Bool { isRemote ? false : (modelSnapshot?.supportsAudio ?? false) }
 

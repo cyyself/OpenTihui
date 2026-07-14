@@ -174,10 +174,38 @@ struct ChatDetailView: View {
     }
 
     /// Shown when the chat's model isn't loaded yet — explicit Load button.
+    /// Wraps a label in a tap-to-switch model menu (used by the chat's bars).
+    private func modelMenu(_ label: some View) -> some View {
+        Menu {
+            Picker("Model", selection: Binding(
+                get: { chat.modelSelectionTag },
+                set: { sel in Task { await chat.switchModel(sel) } })) {
+                Text("Default (\(chat.defaultModelName))").tag(String?.none)
+                if !chat.models.models.isEmpty {
+                    Section("On-device") {
+                        ForEach(chat.models.models) { Text($0.name).tag(String?.some($0.modelPath)) }
+                    }
+                }
+                if !chat.remotes.endpoints.isEmpty {
+                    Section("API") {
+                        ForEach(chat.remotes.endpoints) { Label($0.name, systemImage: "cloud").tag(String?.some($0.selectionTag)) }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 3) {
+                label.foregroundStyle(.primary)
+                Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(.secondary)
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(chat.isGenerating)
+    }
+
     private var modelLoadBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "cpu")
-            Text(chat.resolvedModelName).font(.caption).lineLimit(1)
+            modelMenu(Text(chat.resolvedModelName).font(.caption).lineLimit(1))
             Spacer()
             Button("Load") { Task { await chat.ensureModelLoaded() } }
                 .buttonStyle(.borderedProminent).controlSize(.small)
@@ -201,7 +229,7 @@ struct ChatDetailView: View {
         if chat.isRemote {
             HStack(spacing: 6) {
                 Image(systemName: "cloud.fill").foregroundStyle(.secondary)
-                Text(chat.resolvedModelName).font(.caption).bold().lineLimit(1)
+                modelMenu(Text(chat.resolvedModelName).font(.caption).bold().lineLimit(1))
                 Spacer()
                 Text("API").font(.caption2).foregroundStyle(.secondary)
             }
@@ -212,8 +240,7 @@ struct ChatDetailView: View {
             let frac = usage.total > 0 ? Double(usage.past) / Double(usage.total) : 0
             VStack(spacing: 2) {
                 HStack {
-                    Text(chat.loadedModel?.name ?? "")
-                        .font(.caption).bold().lineLimit(1)
+                    modelMenu(Text(chat.loadedModel?.name ?? "").font(.caption).bold().lineLimit(1))
                     Spacer()
                     Text("ctx \(usage.past)/\(usage.total)")
                         .font(.caption2).foregroundStyle(.secondary)
