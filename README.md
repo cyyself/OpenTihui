@@ -109,7 +109,7 @@ straight from Hugging Face.
 
 - **Curated model catalog** — Settings ▸ Models → **+** → *Recommended Models*:
   one-tap downloads of known-good mobile models (Qwen3.5 0.8B / 2B, Gemma 4
-  E2B / E4B mobile QAT — unsloth quantizations), each with the right projector.
+  E2B / E4B — unsloth Q4_K_XL quantizations), each with the right projector.
 - **Recommended starter model** — when you have no on-device models, Settings ▸
   Models offers a one-tap download of **Qwen3.5 0.8B** (vision) + its projector.
 - **Download from a URL** — paste a direct GGUF link (e.g. a Hugging Face
