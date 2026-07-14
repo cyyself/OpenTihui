@@ -427,7 +427,7 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     }
     std::vector<llama_token> toks = [self tokenize:promptDelta addBos:(_nPastInternal == 0)];
     if (![self decodeTokens:toks wantLogits:wantLogits]) {
-        [self failWith:error msg:@"Context is full and compression is disabled, or evaluation failed."];
+        [self failWith:error msg:@"Context is full — the input doesn't fit in the current window. Increase the context length in Chat Settings, or shorten the input."];
         return NO;
     }
     return YES;
@@ -461,7 +461,7 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     }
 
     if (![self evalPrompt:promptDelta imagePaths:imagePaths audioPaths:audioPaths wantLogits:YES error:nil]) {
-        if (onDone) onDone(NO, @"Context is full and compression is disabled, or evaluation failed.", nil);
+        if (onDone) onDone(NO, @"Context is full — the input doesn't fit in the current window. Increase the context length in Chat Settings, or shorten the input.", nil);
         return;
     }
 
@@ -498,6 +498,7 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     };
     std::string pendingOut;   // sampled but not yet emitted
     bool stopTagHit = false;
+    bool roomExhausted = false;   // context filled up mid-generation
     auto emitStr = ^(const std::string &s) {
         if (s.empty() || !onToken) return;
         NSString *ns = [NSString stringWithUTF8String:s.c_str()];
@@ -537,7 +538,7 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
         }
 
         // feed the sampled token back in
-        if (![self ensureRoomFor:1]) break;
+        if (![self ensureRoomFor:1]) { roomExhausted = true; break; }
         llama_batch batch = llama_batch_init(1, 0, 1);
         batch.token[0]     = tok;
         batch.pos[0]       = _nPastInternal;
@@ -571,6 +572,14 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     if (!stopTagHit) emitStr(pendingOut);
 
     llama_sampler_free(smpl);
+
+    // The prompt (e.g. a long audio clip or large image) consumed the whole
+    // window before a single token could be generated — surface an actionable
+    // error instead of silently returning an empty reply.
+    if (nGenerated == 0 && roomExhausted) {
+        if (onDone) onDone(NO, @"Context is full — the prompt (including any images or audio) uses the whole window, leaving no room for a reply. Increase the context length in Chat Settings, or shorten the input.", nil);
+        return;
+    }
 
     double tEnd = [self nowMillis];
     double secs = (tEnd - tStart) / 1000.0;

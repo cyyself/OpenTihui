@@ -436,7 +436,7 @@ final class ChatViewModel: ObservableObject {
             if let idx = messages.firstIndex(where: { $0.id == assistantID }) {
                 messages[idx].isStreaming = false
                 messages[idx].failed = true
-                messages[idx].text = "⚠️ Context is full and couldn't be compressed further."
+                messages[idx].text = "⚠️ Context is full and couldn't be compressed further. Increase the context length in Chat Settings, then try again."
             }
             isGenerating = false; updateUsage(); persistCurrent()
             return
@@ -625,7 +625,11 @@ final class ChatViewModel: ObservableObject {
         let delta = userDelta(text: userText, nMedia: imagePaths.count, first: true, effort: cfg.thinkingEffort)
         var full = ""
         for await ev in engine.generate(prompt: delta, imagePaths: imagePaths, audioPaths: [], params: cfg.generationParams) {
-            if case .token(let p) = ev { full += p; onUpdate(full) }
+            switch ev {
+            case .token(let p): full += p; onUpdate(full)
+            case .failed(let msg): if full.isEmpty { full = "⚠️ \(msg)"; onUpdate(full) }
+            case .done: break
+            }
         }
         // Restore the open conversation: reload its model/context if compose used a
         // different one (loadModel replays history), else just rebuild the KV cache.
