@@ -98,6 +98,28 @@ final class InferenceEngine: @unchecked Sendable {
         let gpuLayers: Int32 = (gpuEnabled && InferenceEngine.gpuAvailable) ? 999 : 0
         let ctx = Int32(contextLength)
         let mmproj = useProjector ? model.mmprojPath : nil
+
+        // Pre-flight memory check: loading past the app's memory limit doesn't
+        // fail gracefully — iOS jetsam-kills the app (an instant silent exit).
+        // Refuse with guidance instead. Simulator has no comparable limit.
+        #if !targetEnvironment(simulator)
+        func fileSize(_ path: String?) -> UInt64 {
+            guard let path,
+                  let n = (try? FileManager.default.attributesOfItem(atPath: path)[.size]) as? NSNumber
+            else { return 0 }
+            return n.uint64Value
+        }
+        let weights = fileSize(model.modelPath)
+        let projector = fileSize(mmproj)
+        let headroom: UInt64 = 700 << 20   // KV cache + compute buffers + app
+        let needed = weights + projector + headroom
+        let available = UInt64(os_proc_available_memory())
+        LlamaBridge.appendLogNote("openTihui: load pre-flight — weights \(weights >> 20) MB + projector \(projector >> 20) MB + headroom \(headroom >> 20) MB vs available \(available >> 20) MB")
+        if available > 0 && needed > available {
+            let msg = "Not enough memory to load this model: it needs roughly \(needed >> 20) MB but \(available >> 20) MB is available — iOS would terminate the app mid-load. Try a smaller model or quant, turn off Multimodal (projector) in Chat Settings, or close other apps and retry."
+            throw EngineError.loadFailed(msg)
+        }
+        #endif
         return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ModelSnapshot?, Error>) in
             // Run the load at lower priority so the UI thread is never starved
             // while a multi-GB model is mapped/initialised in the background.

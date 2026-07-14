@@ -113,6 +113,8 @@ typedef void (^LMDoneHandler)(BOOL success, NSString * _Nullable errorMessage, N
 + (NSString *)collectedLog;
 /// Clear the captured log buffer.
 + (void)clearLog;
+/// Append an app-side note to the captured log (shown in Settings ▸ Logs).
++ (void)appendLogNote:(NSString *)note;
 
 @end
 

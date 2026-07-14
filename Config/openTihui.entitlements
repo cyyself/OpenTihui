@@ -9,5 +9,11 @@
 	<array>
 		<string>$(APP_GROUP_ID)</string>
 	</array>
+
+	<!-- Multi-GB GGUF models (esp. Gemma 4 + its vision/audio projector) exceed
+	     the default per-app memory limit and get the app jetsam-killed right
+	     after loading. This raises the limit on supported devices. -->
+	<key>com.apple.developer.kernel.increased-memory-limit</key>
+	<true/>
 </dict>
 </plist>

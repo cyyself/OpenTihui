@@ -133,6 +133,16 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     os_unfair_lock_unlock(&gLogLock);
 }
 
++ (void)appendLogNote:(NSString *)note {
+    if (note.length == 0) return;
+    os_unfair_lock_lock(&gLogLock);
+    if (!gLogBuffer) gLogBuffer = [NSMutableString string];
+    [gLogBuffer appendString:note];
+    if (![note hasSuffix:@"\n"]) [gLogBuffer appendString:@"\n"];
+    os_unfair_lock_unlock(&gLogLock);
+    fputs(note.UTF8String, stderr);
+}
+
 - (instancetype)init {
     if (self = [super init]) {
         _model = nullptr;
