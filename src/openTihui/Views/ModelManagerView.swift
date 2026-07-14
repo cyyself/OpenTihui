@@ -15,7 +15,7 @@ struct ModelManagerView: View {
 
     @State private var showImporter = false
     @State private var showDownloader = false
-    @State private var showHuggingFace = false
+    @State private var showRecommended = false
     @State private var editingEndpoint: RemoteEndpoint?
 
     /// Rendered as a group of `Section`s so it can sit at the top of the
@@ -52,7 +52,7 @@ struct ModelManagerView: View {
                         }
                         .padding(.vertical, 4)
                     } footer: {
-                        Text("Or use the **+** button to download from Hugging Face, a URL, the Files app, or add an API endpoint.")
+                        Text("Or use the **+** button to pick a recommended model, download from a URL, import from the Files app, or add an API endpoint.")
                     }
                 }
 
@@ -70,7 +70,7 @@ struct ModelManagerView: View {
                         Text("Available Local Models")
                         Spacer()
                         Menu {
-                            Button { showHuggingFace = true } label: { Label("Download from Hugging Face", systemImage: "arrow.down.heart") }
+                            Button { showRecommended = true } label: { Label("Recommended Models", systemImage: "sparkles") }
                             Button { showDownloader = true } label: { Label("Download from URL", systemImage: "arrow.down.circle") }
                             Button { showImporter = true } label: { Label("Import from Files", systemImage: "folder") }
                             Button { editingEndpoint = RemoteEndpoint(name: "", baseURL: "https://api.openai.com/v1", apiKey: "", modelID: "") } label: { Label("Add API Endpoint", systemImage: "cloud") }
@@ -114,8 +114,8 @@ struct ModelManagerView: View {
             .sheet(isPresented: $showDownloader) {
                 DownloadModelSheet().environmentObject(store)
             }
-            .sheet(isPresented: $showHuggingFace) {
-                HuggingFaceBrowserSheet()
+            .sheet(isPresented: $showRecommended) {
+                RecommendedModelsSheet()
             }
             .sheet(item: $editingEndpoint) { ep in
                 RemoteEndpointSheet(endpoint: ep) { remotes.upsert($0) }

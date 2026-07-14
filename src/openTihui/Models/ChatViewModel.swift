@@ -669,22 +669,43 @@ final class ChatViewModel: ObservableObject {
 
     // MARK: ChatML formatting
 
+    /// Prompt dialect, derived from the GGUF's built-in chat template.
+    /// ChatML (Qwen-style) is the default; Gemma models use turn tags and fold
+    /// the system prompt into the first user turn (no system role).
+    private enum PromptFormat { case chatml, gemma }
+    private var promptFormat: PromptFormat {
+        (modelSnapshot?.chatTemplate.contains("<start_of_turn>") ?? false) ? .gemma : .chatml
+    }
+
     private func systemBlock() -> String {
         let sys = resolvedSystemPrompt()
         guard !sys.isEmpty else { return "" }
-        return "<|im_start|>system\n\(sys)<|im_end|>\n"
+        switch promptFormat {
+        case .chatml: return "<|im_start|>system\n\(sys)<|im_end|>\n"
+        case .gemma:  return ""   // merged into the first user turn by userDelta
+        }
     }
 
     private func userDelta(text: String, nMedia: Int, first: Bool) -> String {
         let marker = engine.mediaMarker
         let markers = String(repeating: "\(marker)\n", count: nMedia)
-        // When reasoning is off, prefill an empty <think> block so the model
-        // skips thinking (matches Qwen3's enable_thinking=false template).
-        let assistantOpen = config.thinkingEffort.enabled
-            ? "<|im_start|>assistant\n"
-            : "<|im_start|>assistant\n<think>\n\n</think>\n\n"
-        let userBlock = "<|im_start|>user\n\(markers)\(text)<|im_end|>\n" + assistantOpen
-        // Close the previous assistant turn (its <|im_end|> was not decoded).
-        return first ? userBlock : "<|im_end|>\n\(userBlock)"
+        switch promptFormat {
+        case .chatml:
+            // When reasoning is off, prefill an empty <think> block so the model
+            // skips thinking (matches Qwen3's enable_thinking=false template).
+            let assistantOpen = config.thinkingEffort.enabled
+                ? "<|im_start|>assistant\n"
+                : "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+            let userBlock = "<|im_start|>user\n\(markers)\(text)<|im_end|>\n" + assistantOpen
+            // Close the previous assistant turn (its <|im_end|> was not decoded).
+            return first ? userBlock : "<|im_end|>\n\(userBlock)"
+        case .gemma:
+            // Gemma has no system role — fold the system prompt into the first
+            // user turn. <end_of_turn> is the model's EOG token.
+            let sys = resolvedSystemPrompt()
+            let sysPrefix = (first && !sys.isEmpty) ? "\(sys)\n\n" : ""
+            let userBlock = "<start_of_turn>user\n\(sysPrefix)\(markers)\(text)<end_of_turn>\n<start_of_turn>model\n"
+            return first ? userBlock : "<end_of_turn>\n\(userBlock)"
+        }
     }
 }

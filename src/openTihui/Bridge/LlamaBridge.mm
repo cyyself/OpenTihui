@@ -308,6 +308,8 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     info.supportsAudio  = _mctx ? mtmd_support_audio(_mctx)  : NO;
     info.usingGPU       = (_nGpuLayersUsed > 0);
     info.backend        = info.usingGPU ? @"Metal" : @"CPU";
+    const char *tmpl    = llama_model_chat_template(_model, NULL);
+    info.chatTemplate   = tmpl ? ([NSString stringWithUTF8String:tmpl] ?: @"") : @"";
     return info;
 }
 

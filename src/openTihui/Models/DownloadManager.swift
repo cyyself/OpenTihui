@@ -75,9 +75,15 @@ final class DownloadManager: NSObject, ObservableObject {
     /// Enqueue the recommended starter model + its vision projector.
     @MainActor
     func enqueueRecommended(store: ModelStore) {
-        let base = "https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF/resolve/main/"
-        if let m = URL(string: base + "Qwen3.5-0.8B-UD-Q4_K_XL.gguf") { enqueue(url: m, store: store) }
-        if let p = URL(string: base + "mmproj-BF16.gguf") { enqueue(url: p, store: store) }
+        enqueue(recommended: RecommendedModel.catalog[0], store: store)
+    }
+
+    /// Enqueue a curated model (weights + its multimodal projector).
+    @MainActor
+    func enqueue(recommended m: RecommendedModel, store: ModelStore) {
+        let base = "https://huggingface.co/\(m.repo)/resolve/main/"
+        if let w = URL(string: base + m.file) { enqueue(url: w, store: store) }
+        if let mmproj = m.mmproj, let p = URL(string: base + mmproj) { enqueue(url: p, store: store) }
     }
 
     static func filename(for url: URL) -> String {
@@ -161,4 +167,38 @@ extension DownloadManager: URLSessionDownloadDelegate {
             }
         }
     }
+}
+
+/// A curated, known-good on-device model: one tap downloads the weights and the
+/// matching multimodal projector from the Hugging Face repo (no in-app browser).
+struct RecommendedModel: Identifiable {
+    var name: String
+    var detail: String        // capabilities / quant summary (localized key)
+    var repo: String          // Hugging Face repo (owner/name)
+    var file: String          // weights filename in the repo
+    var mmproj: String?       // projector filename, if multimodal
+    var id: String { repo + "/" + file }
+
+    static let catalog: [RecommendedModel] = [
+        RecommendedModel(name: "Qwen3.5 0.8B",
+                         detail: "Tiny and fast · vision · Q4_K_XL",
+                         repo: "unsloth/Qwen3.5-0.8B-GGUF",
+                         file: "Qwen3.5-0.8B-UD-Q4_K_XL.gguf",
+                         mmproj: "mmproj-BF16.gguf"),
+        RecommendedModel(name: "Qwen3.5 2B",
+                         detail: "Better quality · vision · Q4_K_XL",
+                         repo: "unsloth/Qwen3.5-2B-GGUF",
+                         file: "Qwen3.5-2B-UD-Q4_K_XL.gguf",
+                         mmproj: "mmproj-BF16.gguf"),
+        RecommendedModel(name: "Gemma 4 E2B (mobile)",
+                         detail: "Google Gemma, QAT for phones · vision + audio",
+                         repo: "unsloth/gemma-4-E2B-it-qat-mobile-GGUF",
+                         file: "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
+                         mmproj: "mmproj-BF16.gguf"),
+        RecommendedModel(name: "Gemma 4 E4B (mobile)",
+                         detail: "Larger Gemma, QAT for phones · vision + audio",
+                         repo: "unsloth/gemma-4-E4B-it-qat-mobile-GGUF",
+                         file: "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
+                         mmproj: "mmproj-BF16.gguf"),
+    ]
 }

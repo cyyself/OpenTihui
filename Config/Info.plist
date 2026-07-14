@@ -23,6 +23,10 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Photos you capture are sent to the on-device model for multimodal inference.</string>
 
+	<!-- Microphone capture for sending recorded audio to the on-device model. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Audio you record is sent to the on-device model for multimodal inference.</string>
+
 	<!-- Users can add OpenAI-compatible endpoints on their LAN (e.g. llama-server). -->
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>openTihui connects to model servers on your local network when you add a LAN API endpoint.</string>

@@ -22,6 +22,7 @@ struct ChatDetailView: View {
     @State private var exportFile: ExportFile?
     @State private var isExporting = false
     @StateObject private var screenshots = ScreenshotSuggester()
+    @StateObject private var recorder = AudioRecorder()
     @State private var editingVariable: PromptVariable?
     @State private var variableInput = ""
     @FocusState private var inputFocused: Bool
@@ -64,6 +65,7 @@ struct ChatDetailView: View {
         .toolbar(.hidden, for: .tabBar)   // full-screen chat: hide the tab bar
         .photosPicker(isPresented: $showPhotoPicker, selection: $photoItems, maxSelectionCount: 4, matching: .images)
         .onChange(of: photoItems) { _, items in Task { await loadPhotos(items) } }
+        .onChange(of: recorder.isRecording) { _, rec in if !rec { attachFinishedRecording() } }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker(isPresented: $showCamera) { data in
                 if let url = AttachmentStore.saveImage(data, maxDimension: chat.config.imageMaxDimension) {
@@ -287,26 +289,61 @@ struct ChatDetailView: View {
         }
     }
 
-    /// The "+" attachments button: photos / camera for vision models.
+    /// The "+" attachments button: photos/camera for vision models, audio
+    /// recording for audio-capable ones (e.g. Gemma with its audio projector).
     @ViewBuilder
     private var addButton: some View {
-        Menu {
-            if chat.supportsVision {
-                Button { showPhotoPicker = true } label: { Label("Photos", systemImage: "photo") }
-                if CameraPicker.isAvailable {
-                    Button { showCamera = true } label: { Label("Take Photo", systemImage: "camera") }
+        if recorder.isRecording {
+            Button { recorder.stop() } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "stop.circle.fill").font(.title2)
+                    Text(recordingTime).font(.caption.monospacedDigit())
                 }
-            } else {
-                Label("This model is text-only", systemImage: "textformat")
+                .foregroundStyle(.red)
             }
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(chat.supportsVision ? Color.accentColor : Color.secondary)
-                .frame(width: 38, height: 38)
+        } else {
+            Menu {
+                if chat.supportsVision {
+                    Button { showPhotoPicker = true } label: { Label("Photos", systemImage: "photo") }
+                    if CameraPicker.isAvailable {
+                        Button { showCamera = true } label: { Label("Take Photo", systemImage: "camera") }
+                    }
+                }
+                if chat.supportsAudio {
+                    Button { startRecording() } label: { Label("Record Audio", systemImage: "mic") }
+                }
+                if !chat.supportsVision && !chat.supportsAudio {
+                    Label("This model is text-only", systemImage: "textformat")
+                }
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle((chat.supportsVision || chat.supportsAudio) ? Color.accentColor : Color.secondary)
+                    .frame(width: 38, height: 38)
+            }
+            .composerGlass(Circle(), interactive: true)
+            .disabled(!chat.supportsVision && !chat.supportsAudio)
         }
-        .composerGlass(Circle(), interactive: true)
-        .disabled(!chat.supportsVision)
+    }
+
+    /// Elapsed recording time as `M:SS` (the recorder auto-stops at its cap).
+    private var recordingTime: String {
+        let e = Int(recorder.elapsed)
+        return String(format: "%d:%02d", e / 60, e % 60)
+    }
+
+    private func startRecording() {
+        recorder.requestPermission { granted in
+            if granted { recorder.start() }
+        }
+    }
+
+    /// Append the finished recording when recording ends — whether the user
+    /// stopped it or it hit the duration cap.
+    private func attachFinishedRecording() {
+        if let url = recorder.takeRecording() {
+            pendingAttachments.append(Attachment(kind: .audio, url: url))
+        }
     }
 
     private func screenshotFloat(_ img: UIImage) -> some View {

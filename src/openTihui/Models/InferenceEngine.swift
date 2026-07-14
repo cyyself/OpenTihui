@@ -26,6 +26,7 @@ struct ModelSnapshot: Sendable {
     var supportsAudio: Bool
     var usingGPU: Bool
     var backend: String
+    var chatTemplate: String
 
     init(_ info: LMModelInfo) {
         desc = info.desc
@@ -36,6 +37,7 @@ struct ModelSnapshot: Sendable {
         supportsAudio = info.supportsAudio
         usingGPU = info.usingGPU
         backend = info.backend
+        chatTemplate = info.chatTemplate
     }
 }
 

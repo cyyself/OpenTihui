@@ -45,6 +45,8 @@ no analytics, contains no trackers and no ads, and has no server of its own.
 - **Camera / Photos** — used only to attach images you choose (or a recent
   screenshot you explicitly accept) to a chat for on-device multimodal
   inference.
+- **Microphone** — used only when you tap Record Audio, to attach a clip to a
+  chat for on-device multimodal inference.
 - **Local Network** — used only to reach LAN model servers you add.
 
 ## Analytics and tracking

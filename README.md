@@ -107,8 +107,9 @@ straight from Hugging Face.
 
 ### Model management & downloads
 
-- **Browse Hugging Face in-app** — Settings ▸ Models → **+** → *Download from
-  Hugging Face* opens huggingface.co; tap any `.gguf` link and confirm to download.
+- **Curated model catalog** — Settings ▸ Models → **+** → *Recommended Models*:
+  one-tap downloads of known-good mobile models (Qwen3.5 0.8B / 2B, Gemma 4
+  E2B / E4B mobile QAT — unsloth quantizations), each with the right projector.
 - **Recommended starter model** — when you have no on-device models, Settings ▸
   Models offers a one-tap download of **Qwen3.5 0.8B** (vision) + its projector.
 - **Download from a URL** — paste a direct GGUF link (e.g. a Hugging Face
@@ -204,7 +205,7 @@ src/openTihui/
   Models/                      ChatViewModel, InferenceEngine, ModelStore, GenConfig,
                                Shortcut, Conversation, DownloadManager, RemoteEndpoint,
                                OpenAIClient, ScreenshotSuggester, AppSettings, CloudSync, …
-  Views/                       ChatView, ModelManagerView, HuggingFaceBrowserSheet,
+  Views/                       ChatView, ModelManagerView, RecommendedModelsSheet,
                                DownloadModelSheet, ComposeView, ChatSettingsView, …
   SmokeTest.swift              env-gated end-to-end self-test
 src/Keyboard/                  custom keyboard extension (app-extension target)
@@ -256,8 +257,10 @@ in the Simulator. Please keep UI strings localized via the String Catalogs
   ggml-metal's kernels fault on older GPUs (e.g. A12 / A12Z) and the Simulator, so
   those run on **CPU** automatically (the projector follows the same choice). The
   resolved backend is shown in **Settings ▸ About**.
-- Input is **text + images**. ChatML formatting is tuned for Qwen/ChatML models;
-  other families may need a different template.
+- Input is **text + images**, plus **audio** on audio-capable models (e.g.
+  Gemma 4 mobile with its projector; recordings are capped at 60 s).
+- Prompt formatting auto-detects the model family from the GGUF's chat template
+  (ChatML/Qwen and Gemma turn tags); other families may need a different template.
 - The M-RoPE models (Qwen-VL) can't use llama.cpp's in-place context shift, so
   compaction is done at the app level by dropping and replaying turns.
 - **Configuration is stored as plain JSON** under **Documents/Config**

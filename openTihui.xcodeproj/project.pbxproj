@@ -368,11 +368,11 @@
 		CF00000000000000000005 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/Keyboard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = L3PU9439R6;
 				GENERATE_INFOPLIST_FILE = NO;
-				CODE_SIGN_ENTITLEMENTS = Config/Keyboard.entitlements;
 				INFOPLIST_FILE = src/Keyboard/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -393,11 +393,11 @@
 		CF00000000000000000006 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/Keyboard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = L3PU9439R6;
 				GENERATE_INFOPLIST_FILE = NO;
-				CODE_SIGN_ENTITLEMENTS = Config/Keyboard.entitlements;
 				INFOPLIST_FILE = src/Keyboard/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

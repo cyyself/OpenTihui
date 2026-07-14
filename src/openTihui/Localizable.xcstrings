@@ -1008,22 +1008,6 @@
         }
       }
     },
-    "Download from Hugging Face": {
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "从 Hugging Face 下载"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "從 Hugging Face 下載"
-          }
-        }
-      }
-    },
     "Download from URL": {
       "localizations": {
         "zh-Hans": {
@@ -3813,6 +3797,134 @@
           "stringUnit": {
             "state": "translated",
             "value": "隱私權政策"
+          }
+        }
+      }
+    },
+    "Recommended Models": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "推荐模型"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "推薦模型"
+          }
+        }
+      }
+    },
+    "Weights and the multimodal projector download together from Hugging Face (unsloth quantizations). Need a different model? Use Download from URL or drop a GGUF into the Models folder in the Files app.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型权重与多模态投影器将一起从 Hugging Face 下载（unsloth 量化版本）。需要其他模型？使用“从 URL 下载”，或将 GGUF 文件放入“文件”App 的 Models 文件夹。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型權重與多模態投影器將一起從 Hugging Face 下載（unsloth 量化版本）。需要其他模型？使用「從 URL 下載」，或將 GGUF 檔案放入「檔案」App 的 Models 資料夾。"
+          }
+        }
+      }
+    },
+    "Tiny and fast · vision · Q4_K_XL": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小巧快速 · 视觉 · Q4_K_XL"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小巧快速 · 視覺 · Q4_K_XL"
+          }
+        }
+      }
+    },
+    "Better quality · vision · Q4_K_XL": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更好的质量 · 视觉 · Q4_K_XL"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更好的品質 · 視覺 · Q4_K_XL"
+          }
+        }
+      }
+    },
+    "Google Gemma, QAT for phones · vision + audio": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google Gemma，手机 QAT 量化 · 视觉 + 音频"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google Gemma，手機 QAT 量化 · 視覺 + 音訊"
+          }
+        }
+      }
+    },
+    "Larger Gemma, QAT for phones · vision + audio": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更大的 Gemma，手机 QAT 量化 · 视觉 + 音频"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更大的 Gemma，手機 QAT 量化 · 視覺 + 音訊"
+          }
+        }
+      }
+    },
+    "Or use the **+** button to pick a recommended model, download from a URL, import from the Files app, or add an API endpoint.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "或使用 **+** 按钮选择推荐模型、从 URL 下载、从“文件”App 导入，或添加 API 端点。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "或使用 **+** 按鈕選擇推薦模型、從 URL 下載、從「檔案」App 匯入，或新增 API 端點。"
+          }
+        }
+      }
+    },
+    "Record Audio": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "录制音频"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "錄製音訊"
           }
         }
       }

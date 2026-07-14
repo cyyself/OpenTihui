@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AVFoundation
 import UIKit
 
 enum AttachmentStore {
@@ -39,6 +40,80 @@ extension UIImage {
         format.scale = 1   // newSize is already in pixels
         return UIGraphicsImageRenderer(size: newSize, format: format).image { _ in
             draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
+}
+
+/// Minimal WAV recorder (16 kHz mono PCM — the rate multimodal audio models
+/// expect). Recording is capped at `maxDuration` so a clip can't blow up the
+/// model's context (audio tokens scale with duration) or the on-disk size
+/// (16 kHz mono ≈ 1.9 MB/min); it auto-stops at the limit.
+final class AudioRecorder: NSObject, ObservableObject {
+    @Published var isRecording = false
+    @Published private(set) var elapsed: TimeInterval = 0
+
+    let maxDuration: TimeInterval = 60
+
+    private var recorder: AVAudioRecorder?
+    private var timer: Timer?
+    private var startedAt: Date?
+    private var lastRecordingURL: URL?
+    private var consumed = true
+
+    func start() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playAndRecord, mode: .default)
+            try session.setActive(true)
+        } catch { return }
+
+        let url = AttachmentStore.directory.appendingPathComponent("audio-\(UUID().uuidString).wav")
+        let settings: [String: Any] = [
+            AVFormatIDKey: Int(kAudioFormatLinearPCM),
+            AVSampleRateKey: 16000,
+            AVNumberOfChannelsKey: 1,
+            AVLinearPCMBitDepthKey: 16,
+            AVLinearPCMIsBigEndianKey: false,
+            AVLinearPCMIsFloatKey: false
+        ]
+        do {
+            recorder = try AVAudioRecorder(url: url, settings: settings)
+            recorder?.record()
+            lastRecordingURL = url
+            consumed = false
+            elapsed = 0
+            startedAt = Date()
+            isRecording = true
+            timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+                guard let self, let started = self.startedAt else { return }
+                self.elapsed = Date().timeIntervalSince(started)
+                if self.elapsed >= self.maxDuration { self.stop() }   // auto-stop at the cap
+            }
+        } catch { isRecording = false }
+    }
+
+    @discardableResult
+    func stop() -> URL? {
+        timer?.invalidate(); timer = nil
+        recorder?.stop()
+        recorder = nil
+        startedAt = nil
+        isRecording = false
+        try? AVAudioSession.sharedInstance().setActive(false)
+        return lastRecordingURL
+    }
+
+    /// The finished recording, returned once (so a manual *and* an auto-stop
+    /// don't both attach it). Lets the view observe `isRecording → false`.
+    func takeRecording() -> URL? {
+        guard !consumed, let url = lastRecordingURL else { return nil }
+        consumed = true
+        return url
+    }
+
+    func requestPermission(_ completion: @escaping (Bool) -> Void) {
+        AVAudioApplication.requestRecordPermission { granted in
+            DispatchQueue.main.async { completion(granted) }
         }
     }
 }
