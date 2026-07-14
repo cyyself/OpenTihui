@@ -9,10 +9,11 @@
 //
 
 import UIKit
+import AVFoundation
 
 enum SmokeTest {
     private static var mode: String? { ProcessInfo.processInfo.environment["LLAMACHAT_SMOKETEST"] }
-    static var isEnabled: Bool { ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"].contains(mode ?? "") }
+    static var isEnabled: Bool { ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"].contains(mode ?? "") }
 
     static func run() {
         Task.detached(priority: .userInitiated) {
@@ -29,6 +30,7 @@ enum SmokeTest {
             case "11": await runMissingFileTest()
             case "12": await runRemoteTest()
             case "13": await runPDFExportTest()
+            case "14": await runAudioTest()
             default:  await runAsync()
             }
             NSLog("SMOKETEST: done")
@@ -279,11 +281,106 @@ enum SmokeTest {
     }
 
     @MainActor
-    private static func send(_ chat: ChatViewModel, _ text: String) async {
-        chat.send(text: text, attachments: [])
-        for _ in 0..<90 {
+    private static func send(_ chat: ChatViewModel, _ text: String,
+                             attachments: [Attachment] = [], timeout: Int = 90) async {
+        chat.send(text: text, attachments: attachments)
+        for _ in 0..<timeout {
             if !chat.isGenerating && !chat.isReplaying { break }
             try? await Task.sleep(nanoseconds: 1_000_000_000)
+        }
+    }
+
+    // MARK: audio input (mode 14)
+
+    /// End-to-end voice input: synthesize real speech (TTS) into a 16 kHz WAV,
+    /// send it to an audio-capable model (Gemma), and check the reply contains
+    /// the spoken words.
+    @MainActor
+    private static func runAudioTest() async {
+        let models = ModelStore()
+        guard let model = models.models.first(where: { $0.name.lowercased().contains("gemma") && $0.hasMultimodal }) else {
+            log("FAIL: no gemma model with projector on this device"); return
+        }
+        let chat = ChatViewModel(engine: InferenceEngine(), store: ConversationStore(), models: models,
+                                 remotes: RemoteStore(), settings: AppSettings.shared)
+        var cfg = GenConfig.default
+        cfg.contextLength = 4096; cfg.loadProjector = true; cfg.thinkingEffort = .off; cfg.maxTokens = 200
+        await chat.startShortcut(Shortcut(name: "AudioTest", icon: "mic",
+                                          systemPrompt: "You are a helpful assistant.",
+                                          modelPath: model.modelPath, config: cfg))
+        await chat.ensureModelLoaded()
+        log("loaded \(model.name) audio=\(chat.supportsAudio) vision=\(chat.supportsVision)")
+        guard chat.supportsAudio else { log("FAIL: model reports no audio support (mmproj has no audio tower?)"); return }
+
+        guard let wav = await synthesizeSpeech("strawberry banana seventeen") else { log("FAIL: could not synthesize speech"); return }
+        let bytes = (try? FileManager.default.attributesOfItem(atPath: wav.path)[.size] as? NSNumber)?.intValue ?? -1
+        log("speech wav bytes=\(bytes)")
+
+        let before = chat.contextUsage.past
+        await send(chat, "Transcribe exactly the words you hear in this audio clip.",
+                   attachments: [Attachment(kind: .audio, url: wav)], timeout: 600)
+        let reply = chat.messages.last?.text ?? ""
+        log("ctx before=\(before) after=\(chat.contextUsage.past) (audio tokens should add dozens)")
+        log("reply=\(reply.prefix(220))")
+        let heard = ["strawberry", "banana", "seventeen"].filter { reply.lowercased().contains($0) }
+        log(heard.count >= 2 ? "AUDIO HEARD ✓ \(heard)" : "AUDIO NOT HEARD ✗ matched=\(heard)")
+        if heard.count < 2 {
+            let tail = String(LlamaBridge.collectedLog().suffix(700))
+            for line in tail.split(separator: "\n").suffix(12) { log("LLOG| \(line)") }
+        }
+    }
+
+    /// Render `text` as spoken audio into a 16 kHz mono Int16 WAV (the format
+    /// multimodal audio encoders expect).
+    private static func synthesizeSpeech(_ text: String) async -> URL? {
+        let utt = AVSpeechUtterance(string: text)
+        utt.voice = AVSpeechSynthesisVoice(language: "en-US")
+        utt.rate = 0.45
+        let synth = AVSpeechSynthesizer()
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("smoke-speech.wav")
+        try? FileManager.default.removeItem(at: url)
+        guard let outFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16000,
+                                            channels: 1, interleaved: true) else { return nil }
+        var outFile: AVAudioFile?
+        var converter: AVAudioConverter?
+        var resumed = false
+        return await withCheckedContinuation { cont in
+            // AVAudioFile finalizes the WAV header only on close — release it
+            // before resuming, or the file reads as zero-length audio.
+            let finish: (URL?) -> Void = { r in
+                if !resumed {
+                    resumed = true
+                    let ok = outFile != nil && r != nil
+                    converter = nil
+                    outFile = nil          // closes + finalizes the WAV
+                    cont.resume(returning: ok ? url : nil)
+                }
+            }
+            synth.write(utt) { buffer in
+                guard let pcm = buffer as? AVAudioPCMBuffer else { finish(nil); return }
+                if pcm.frameLength == 0 { finish(outFile != nil ? url : nil); return }   // end marker
+                do {
+                    if outFile == nil {
+                        outFile = try AVAudioFile(forWriting: url, settings: outFormat.settings,
+                                                  commonFormat: .pcmFormatInt16, interleaved: true)
+                        converter = AVAudioConverter(from: pcm.format, to: outFormat)
+                    }
+                    guard let conv = converter else { return }
+                    let cap = AVAudioFrameCount(Double(pcm.frameLength) * 16000.0 / pcm.format.sampleRate) + 64
+                    guard let out = AVAudioPCMBuffer(pcmFormat: outFormat, frameCapacity: cap) else { return }
+                    var fed = false
+                    var err: NSError?
+                    conv.convert(to: out, error: &err) { _, status in
+                        if fed { status.pointee = .noDataNow; return nil }
+                        fed = true; status.pointee = .haveData; return pcm
+                    }
+                    if out.frameLength > 0 { try outFile?.write(from: out) }
+                } catch { finish(nil) }
+            }
+            // Safety net: some voices never deliver the zero-length end marker.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
+                finish(outFile != nil ? url : nil)
+            }
         }
     }
 

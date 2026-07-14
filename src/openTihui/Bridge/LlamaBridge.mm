@@ -179,7 +179,8 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
 
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        llama_log_set(llamachat_log_capture, NULL);   // capture llama + ggml logs
+        llama_log_set(llamachat_log_capture, NULL);        // capture llama + ggml logs
+        mtmd_helper_log_set(llamachat_log_capture, NULL);   // …and mtmd (media) logs
         llama_backend_init();
     });
 
@@ -497,8 +498,9 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
         return;
     }
 
-    if (![self evalPrompt:promptDelta imagePaths:imagePaths audioPaths:audioPaths wantLogits:YES error:nil]) {
-        if (onDone) onDone(NO, @"Context is full — the input doesn't fit in the current window. Increase the context length in Chat Settings, or shorten the input.", nil);
+    NSError *evalErr = nil;
+    if (![self evalPrompt:promptDelta imagePaths:imagePaths audioPaths:audioPaths wantLogits:YES error:&evalErr]) {
+        if (onDone) onDone(NO, evalErr.localizedDescription ?: @"Failed to evaluate the prompt.", nil);
         return;
     }
 
@@ -668,7 +670,7 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     mtmd_input_chunks_free(chunks);
 
     if (erc != 0) {
-        [self failWith:error msg:@"Failed to evaluate multimodal input."];
+        [self failWith:error msg:[NSString stringWithFormat:@"Failed to evaluate multimodal input (media encoder error %d). See Settings ▸ Logs.", erc]];
         return NO;
     }
     _nPastInternal = (int)newNPast;
