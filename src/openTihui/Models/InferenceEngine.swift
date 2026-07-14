@@ -27,6 +27,7 @@ struct ModelSnapshot: Sendable {
     var usingGPU: Bool
     var backend: String
     var chatTemplate: String
+    var loadNotice: String
 
     init(_ info: LMModelInfo) {
         desc = info.desc
@@ -38,6 +39,7 @@ struct ModelSnapshot: Sendable {
         usingGPU = info.usingGPU
         backend = info.backend
         chatTemplate = info.chatTemplate
+        loadNotice = info.loadNotice
     }
 }
 

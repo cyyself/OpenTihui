@@ -30,6 +30,7 @@ struct ChatDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             if let err = chat.loadError { errorBanner(err) }
+            if let note = chat.loadNotice { noticeBanner(note) }
             if chat.isModelReady { contextBar }
             else if chat.isLoadingModel { loadingBar }
             else if chat.hasAvailableModel { modelLoadBar }
@@ -138,6 +139,18 @@ struct ChatDetailView: View {
         }
         .padding(.horizontal).padding(.vertical, 8)
         .background(Color.orange.opacity(0.12))
+    }
+
+    /// Informational (non-error) banner, e.g. "ternary quants → running on CPU".
+    private func noticeBanner(_ message: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "info.circle.fill").foregroundStyle(Color.accentColor)
+            Text(message).font(.caption)
+            Spacer()
+            Button { chat.loadNotice = nil } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }
+        }
+        .padding(.horizontal).padding(.vertical, 8)
+        .background(Color.accentColor.opacity(0.10))
     }
 
     private var loadingBar: some View {

@@ -178,6 +178,9 @@ make            # builds the xcframework (first run only) + the app for the Simu
 make run        # build, install, and launch in the booted Simulator
 ```
 
+Local fixes to llama.cpp live as `patches/llama.cpp/*.patch`, applied
+automatically by the framework build (see `patches/llama.cpp/README.md`).
+
 Other targets: `make framework` (force-rebuild the xcframework), `make app`
 (reuse the existing one), `make clean`, `make distclean`, and `make icon`
 (regenerate the app icon from `design/AppIcon.tex`). Override the configuration or

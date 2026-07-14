@@ -8,6 +8,7 @@
 #import <llama/llama.h>
 #import <llama/mtmd.h>
 #import <llama/mtmd-helper.h>
+#import <llama/gguf.h>
 #import <Metal/Metal.h>
 
 #include <vector>
@@ -88,6 +89,9 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
 
     // accumulates raw bytes from token pieces until they form valid UTF-8
     std::vector<char> _pieceBuffer;
+
+    // Informational note from the last load (e.g. ternary → CPU fallback).
+    NSString *_loadNotice;
 }
 
 + (NSString *)mediaMarker {
@@ -186,6 +190,28 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     // device); otherwise force CPU so the Simulator doesn't silently mislead.
     if (nGpuLayers > 0 && !llama_supports_gpu_offload()) {
         nGpuLayers = 0;
+    }
+    _loadNotice = nil;
+    if (nGpuLayers > 0) {
+        // Ternary quants (TQ1_0/TQ2_0 — e.g. Gemma "mobile QAT" builds) have no
+        // Metal kernels in llama.cpp (checked upstream master too), and hitting
+        // one mid-decode is a hard GGML_ABORT. Detect them from the GGUF header
+        // and run on CPU, whose ternary kernels are ARM-optimized.
+        struct gguf_init_params gp = { /*.no_alloc =*/ true, /*.ctx =*/ NULL };
+        struct gguf_context *g = gguf_init_from_file(modelPath.fileSystemRepresentation, gp);
+        if (g) {
+            bool ternary = false;
+            for (int64_t i = 0, n = gguf_get_n_tensors(g); i < n && !ternary; ++i) {
+                enum ggml_type t = gguf_get_tensor_type(g, i);
+                if (t == GGML_TYPE_TQ1_0 || t == GGML_TYPE_TQ2_0) ternary = true;
+            }
+            gguf_free(g);
+            if (ternary) {
+                nGpuLayers = 0;
+                _loadNotice = @"This model uses ternary quantization (TQ1_0/TQ2_0), which has no Apple-GPU (Metal) kernels in llama.cpp yet — running on CPU instead. Expect slower output; ternary CPU kernels are ARM-optimized.";
+                [LlamaBridge appendLogNote:[@"openTihui: " stringByAppendingString:_loadNotice]];
+            }
+        }
     }
     _nGpuLayersUsed = nGpuLayers;
 
@@ -320,6 +346,7 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
     info.backend        = info.usingGPU ? @"Metal" : @"CPU";
     const char *tmpl    = llama_model_chat_template(_model, NULL);
     info.chatTemplate   = tmpl ? ([NSString stringWithUTF8String:tmpl] ?: @"") : @"";
+    info.loadNotice     = _loadNotice ?: @"";
     return info;
 }
 

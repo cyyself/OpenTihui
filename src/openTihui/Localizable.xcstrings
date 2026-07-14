@@ -3919,18 +3919,34 @@
         }
       }
     },
-    "Larger Gemma · vision + audio · Q4_K_XL": {
+    "Smallest Gemma · ternary QAT · runs on CPU": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "更大的 Gemma · 视觉 + 音频 · Q4_K_XL"
+            "value": "最小的 Gemma · 三值 QAT · 在 CPU 上运行"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "更大的 Gemma · 視覺 + 音訊 · Q4_K_XL"
+            "value": "最小的 Gemma · 三值 QAT · 在 CPU 上執行"
+          }
+        }
+      }
+    },
+    "Larger Gemma · ternary QAT · runs on CPU": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更大的 Gemma · 三值 QAT · 在 CPU 上运行"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更大的 Gemma · 三值 QAT · 在 CPU 上執行"
           }
         }
       }

@@ -17,6 +17,8 @@ final class ChatViewModel: ObservableObject {
     @Published var isGenerating = false
     @Published var loadedModel: ManagedModel?
     @Published var loadError: String?
+    /// Non-fatal note from the last model load (e.g. "ternary quants → CPU").
+    @Published var loadNotice: String?
     @Published var isLoadingModel = false
     @Published var contextUsage: (past: Int, total: Int) = (0, 0)
     @Published var isReplaying = false
@@ -209,6 +211,7 @@ final class ChatViewModel: ObservableObject {
                                              })
             loadedModel = model
             modelSnapshot = snap
+            loadNotice = (snap?.loadNotice.isEmpty == false) ? snap?.loadNotice : nil
             settings.lastModelPath = model.modelPath   // remember for next launch / auto-load
             // Rebuild context for whatever conversation is currently open.
             await replayHistory()

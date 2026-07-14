@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL      usingGPU;       // GPU layers actually offloaded
 @property (nonatomic, copy)   NSString *backend;        // "Metal" or "CPU"
 @property (nonatomic, copy)   NSString *chatTemplate;   // GGUF's built-in Jinja template ("" if none)
+@property (nonatomic, copy)   NSString *loadNotice;     // informational note from load ("" if none)
 @end
 
 /// Sampling / decoding parameters for a single generation.

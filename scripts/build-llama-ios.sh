@@ -20,6 +20,22 @@ GGML_BLAS_DEFAULT=ON
 GGML_METAL_USE_BF16=ON
 GGML_OPENMP=OFF
 
+# --- local patches -----------------------------------------------------------
+# Apply patches/llama.cpp/*.patch (relative to the repo root; this script runs
+# from inside the llama.cpp submodule). Idempotent: already-applied patches are
+# skipped, ones that no longer apply abort the build.
+for _p in ../patches/llama.cpp/*.patch; do
+    [ -e "$_p" ] || continue
+    if git apply --check "$_p" 2>/dev/null; then
+        git apply "$_p" && echo "patched: $(basename "$_p")"
+    elif git apply --reverse --check "$_p" 2>/dev/null; then
+        echo "already patched: $(basename "$_p")"
+    else
+        echo "ERROR: $(basename "$_p") does not apply to this llama.cpp checkout" >&2
+        exit 1
+    fi
+done
+
 COMMON_C_FLAGS="-Wno-macro-redefined -Wno-shorten-64-to-32 -Wno-unused-command-line-argument -g"
 COMMON_CXX_FLAGS="-Wno-macro-redefined -Wno-shorten-64-to-32 -Wno-unused-command-line-argument -g"
 
