@@ -190,13 +190,18 @@ enum SmokeTest {
         let chat = ChatViewModel(engine: InferenceEngine(), store: ConversationStore(), models: models, remotes: RemoteStore(), settings: settings)
         await chat.loadModel(model)
 
-        for effort in [ThinkingEffort.high, .off] {
+        for effort in [ThinkingEffort.high, .low, .off] {
             await chat.newConversation()
             chat.thinkingEffort = effort
-            await send(chat, "What is 17 * 23? Reason briefly, then give the answer.")
+            // The tiny test model doesn't open <think> on its own — for the Low
+            // case, instruct it to, so the budget force-close path is exercised.
+            let prompt = effort == .low
+                ? "Begin your reply with the exact text \"<think>\" and then reason step by step in great detail, sentence after sentence, about 17 * 23 without ever concluding."
+                : "What is 17 * 23? Think very carefully step by step about every detail before answering."
+            await send(chat, prompt)
             let t = chat.messages.last?.text ?? ""
             let split = splitReasoning(t)
-            log("effort=\(effort.label) hasThinkTag=\(t.contains("<think>")) thinkLen=\(split.thinking?.count ?? -1) answerLen=\(split.answer.count)")
+            log("effort=\(effort.label) hasThinkTag=\(t.contains("<think>")) thinkClosed=\(t.contains("</think>")) thinkLen=\(split.thinking?.count ?? -1) answerLen=\(split.answer.count)")
             log("  answer=\(split.answer.prefix(70))")
         }
 

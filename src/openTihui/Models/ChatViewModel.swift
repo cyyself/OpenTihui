@@ -622,7 +622,7 @@ final class ChatViewModel: ObservableObject {
         }
         guard loadedModel != nil else { return "" }
         try? await engine.reset(systemPrompt: systemBlock())
-        let delta = userDelta(text: userText, nMedia: imagePaths.count, first: true)
+        let delta = userDelta(text: userText, nMedia: imagePaths.count, first: true, effort: cfg.thinkingEffort)
         var full = ""
         for await ev in engine.generate(prompt: delta, imagePaths: imagePaths, audioPaths: [], params: cfg.generationParams) {
             if case .token(let p) = ev { full += p; onUpdate(full) }
@@ -686,14 +686,16 @@ final class ChatViewModel: ObservableObject {
         }
     }
 
-    private func userDelta(text: String, nMedia: Int, first: Bool) -> String {
+    /// `effort` overrides the chat config's thinking effort (compose runs use
+    /// their own per-run config — the prefill must match its generation params).
+    private func userDelta(text: String, nMedia: Int, first: Bool, effort: ThinkingEffort? = nil) -> String {
         let marker = engine.mediaMarker
         let markers = String(repeating: "\(marker)\n", count: nMedia)
         switch promptFormat {
         case .chatml:
             // When reasoning is off, prefill an empty <think> block so the model
             // skips thinking (matches Qwen3's enable_thinking=false template).
-            let assistantOpen = config.thinkingEffort.enabled
+            let assistantOpen = (effort ?? config.thinkingEffort).enabled
                 ? "<|im_start|>assistant\n"
                 : "<|im_start|>assistant\n<think>\n\n</think>\n\n"
             let userBlock = "<|im_start|>user\n\(markers)\(text)<|im_end|>\n" + assistantOpen
