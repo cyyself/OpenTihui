@@ -28,6 +28,17 @@ struct KeyboardRootView: View {
     private enum Status: Equatable { case idle, imported, error(String) }
     private enum KeyLayer { case letters, numbers, symbols }
 
+    /// Stock-keyboard-style fills. The root stays transparent so the system's
+    /// blurred keyboard backdrop shows through (Grammarly-style); keys sit on it
+    /// as white / translucent-white surfaces that adapt to light/dark.
+    static let keyFill = Color(UIColor { t in
+        t.userInterfaceStyle == .dark ? UIColor(white: 1.0, alpha: 0.30) : UIColor.white
+    })
+    static let controlFill = Color(UIColor { t in
+        t.userInterfaceStyle == .dark ? UIColor(white: 1.0, alpha: 0.12)
+                                      : UIColor(red: 0.68, green: 0.71, blue: 0.75, alpha: 1.0)
+    })
+
     /// Fallback chips before the user imports their shortcut selection.
     private static let defaultActions: [KBAction] = [
         .init(title: "Polite", icon: "face.smiling", instruction: "Rewrite this to be warmer and more polite, keeping the meaning. Return only the rewritten text."),
@@ -53,7 +64,6 @@ struct KeyboardRootView: View {
         .padding(10)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 280, alignment: .top)   // pin header — no shift when switching modes
-        .background(Color(.systemGray6))
         .environment(\.locale, locale)
         .onChange(of: showActions) { _, v in UserDefaults.standard.set(v, forKey: "kb.showActions") }
         .task { autoImportIfNeeded() }
@@ -94,7 +104,7 @@ struct KeyboardRootView: View {
             Button { actions.deleteContextBefore() } label: {
                 Text("Clear").font(.caption.weight(.medium))
                     .padding(.horizontal, 12).frame(height: 34)
-                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 8))
+                    .background(Self.keyFill, in: RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
             keyButton("delete.left") { actions.deleteBackward() }
@@ -153,7 +163,7 @@ struct KeyboardRootView: View {
                     Button { actions.insert(" ") } label: {
                         Text(verbatim: "space").font(.system(size: 15)).foregroundStyle(.primary)
                             .frame(maxWidth: .infinity).frame(height: keyH)
-                            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 6))
+                            .background(Self.keyFill, in: RoundedRectangle(cornerRadius: 6))
                             .shadow(color: .black.opacity(0.15), radius: 0, y: 1)
                     }
                     .buttonStyle(.plain)
@@ -180,7 +190,7 @@ struct KeyboardRootView: View {
                 Button { tapChar(s) } label: {
                     Text(displayChar(s)).font(.system(size: 22)).foregroundStyle(.primary)
                         .frame(width: unit, height: h)
-                        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 6))
+                        .background(Self.keyFill, in: RoundedRectangle(cornerRadius: 6))
                         .shadow(color: .black.opacity(0.15), radius: 0, y: 1)
                 }
                 .buttonStyle(.plain)
@@ -197,7 +207,7 @@ struct KeyboardRootView: View {
             }
             .foregroundStyle(.primary)
             .frame(width: width, height: h)
-            .background(Color(.systemGray4), in: RoundedRectangle(cornerRadius: 6))
+            .background(Self.controlFill, in: RoundedRectangle(cornerRadius: 6))
             .shadow(color: .black.opacity(0.15), radius: 0, y: 1)
         }
         .buttonStyle(.plain)
@@ -234,7 +244,7 @@ struct KeyboardRootView: View {
                             icon: { Image(systemName: action.icon) }
                             .font(.callout).fixedSize()          // chip hugs its text — no truncation
                             .padding(.horizontal, 12).padding(.vertical, 9)
-                            .background(Color(.systemBackground), in: Capsule())
+                            .background(Self.keyFill, in: Capsule())
                     }
                     .buttonStyle(.plain)
                 }
@@ -250,7 +260,7 @@ struct KeyboardRootView: View {
             Button { withAnimation(.easeInOut(duration: 0.2)) { showActions = false } } label: {
                 Image(systemName: "keyboard")
                     .font(.callout).frame(width: 44).padding(.vertical, 9)
-                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 10))
+                    .background(Self.keyFill, in: RoundedRectangle(cornerRadius: 10))
             }
             .buttonStyle(.plain)
 
@@ -264,7 +274,7 @@ struct KeyboardRootView: View {
             Button { insertClipboard() } label: {
                 Label("Paste", systemImage: "doc.on.clipboard")
                     .font(.callout).frame(maxWidth: .infinity).padding(.vertical, 9)
-                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 10))
+                    .background(Self.keyFill, in: RoundedRectangle(cornerRadius: 10))
             }
             .buttonStyle(.plain)
         }
@@ -304,7 +314,7 @@ struct KeyboardRootView: View {
         Button(action: run) {
             Image(systemName: icon).font(.body)
                 .frame(width: 38, height: 34)
-                .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 8))
+                .background(Self.keyFill, in: RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -417,7 +427,10 @@ private struct SwitchKeyboardButton: UIViewRepresentable {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "globe"), for: .normal)
         b.tintColor = .label
-        b.backgroundColor = .systemBackground
+        b.backgroundColor = UIColor { t in
+            t.userInterfaceStyle == .dark ? UIColor(white: 1.0, alpha: 0.12)
+                                          : UIColor(red: 0.68, green: 0.71, blue: 0.75, alpha: 1.0)
+        }
         b.layer.cornerRadius = 8
         b.setContentHuggingPriority(.required, for: .horizontal)
         configure(b)
