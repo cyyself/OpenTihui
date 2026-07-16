@@ -11,13 +11,20 @@ struct SettingsView: View {
     @EnvironmentObject var settings: AppSettings
     @EnvironmentObject var chat: ChatViewModel
     @EnvironmentObject var shortcuts: ShortcutStore
+    @EnvironmentObject var store: ModelStore
+    @EnvironmentObject var remotes: RemoteStore
+    @EnvironmentObject var downloads: DownloadManager
+
+    /// Model-management sheet state; presented from the Form root below (see
+    /// ModelSheets for why they must not be presented from lazy Form rows).
+    @StateObject private var modelSheets = ModelSheets()
 
     @State private var confirmReset = false
 
     var body: some View {
         Form {
             // Models live directly at the top of Settings.
-            ModelManagerView()
+            ModelManagerView().environmentObject(modelSheets)
 
             Section("openTihui Keyboard") {
                 NavigationLink {
@@ -103,6 +110,24 @@ struct SettingsView: View {
             Button("Reset Shortcuts", role: .destructive) { shortcuts.resetToDefaults() }
             Button("Cancel", role: .cancel) {}
         }
+        .sheet(isPresented: $modelSheets.showImporter) {
+            ImportModelSheet { modelURL, mmprojURL in
+                do { try store.importModel(modelURL: modelURL, mmprojURL: mmprojURL) }
+                catch { print("Import failed: \(error)") }
+            }
+        }
+        .sheet(isPresented: $modelSheets.showDownloader) {
+            DownloadModelSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $modelSheets.showRecommended) {
+            RecommendedModelsSheet()
+        }
+        .sheet(item: $modelSheets.editingEndpoint) { ep in
+            RemoteEndpointSheet(endpoint: ep) { remotes.upsert($0) }
+        }
+        .alert("Couldn’t load model", isPresented: .constant(chat.loadError != nil)) {
+            Button("OK") { chat.loadError = nil }
+        } message: { Text(chat.loadError ?? "") }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .overlay {

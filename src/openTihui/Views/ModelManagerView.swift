@@ -6,6 +6,17 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// Presentation state for the model-management sheets. Owned by SettingsView,
+/// which attaches the actual `.sheet` modifiers to the Form's *root* — inside
+/// the lazy Form/List, rows get recycled on scroll/updates, and a sheet
+/// presented from a recycled row is torn down (the "sheet randomly closes" bug).
+final class ModelSheets: ObservableObject {
+    @Published var showImporter = false
+    @Published var showDownloader = false
+    @Published var showRecommended = false
+    @Published var editingEndpoint: RemoteEndpoint?
+}
+
 struct ModelManagerView: View {
     @EnvironmentObject var store: ModelStore
     @EnvironmentObject var chat: ChatViewModel
@@ -13,19 +24,11 @@ struct ModelManagerView: View {
     @EnvironmentObject var remotes: RemoteStore
     @EnvironmentObject var downloads: DownloadManager
 
-    @State private var showImporter = false
-    @State private var showDownloader = false
-    @State private var showRecommended = false
-    @State private var editingEndpoint: RemoteEndpoint?
+    @EnvironmentObject var sheets: ModelSheets
 
     /// Rendered as a group of `Section`s so it can sit at the top of the
-    /// Settings `Form` (no `List`/toolbar of its own).
-    ///
-    /// NOTE: modifiers put on the `Group` are applied to *every* child, and two
-    /// sections here are conditional — when one appears/disappears (a download
-    /// starting, the model list changing) the children's structural identity
-    /// shifts and any sheet presented from them is torn down. All presentation
-    /// modifiers therefore live on `endpointsSection`, which always exists.
+    /// Settings `Form` (no `List`/toolbar of its own). Sheets are presented by
+    /// SettingsView from the Form's root — never from these (lazy) sections.
     var body: some View {
         Group {
             if !downloads.items.isEmpty {
@@ -37,24 +40,6 @@ struct ModelManagerView: View {
             localModelsSection
             endpointsSection
                 .onAppear { store.reloadInBackground() }
-                .sheet(isPresented: $showImporter) {
-                    ImportModelSheet { modelURL, mmprojURL in
-                        do { try store.importModel(modelURL: modelURL, mmprojURL: mmprojURL) }
-                        catch { print("Import failed: \(error)") }
-                    }
-                }
-                .sheet(isPresented: $showDownloader) {
-                    DownloadModelSheet().environmentObject(store)
-                }
-                .sheet(isPresented: $showRecommended) {
-                    RecommendedModelsSheet()
-                }
-                .sheet(item: $editingEndpoint) { ep in
-                    RemoteEndpointSheet(endpoint: ep) { remotes.upsert($0) }
-                }
-                .alert("Couldn’t load model", isPresented: .constant(chat.loadError != nil)) {
-                    Button("OK") { chat.loadError = nil }
-                } message: { Text(chat.loadError ?? "") }
         }
     }
 
@@ -107,10 +92,10 @@ struct ModelManagerView: View {
                 Text("Available Local Models")
                 Spacer()
                 Menu {
-                    Button { showRecommended = true } label: { Label("Recommended Models", systemImage: "sparkles") }
-                    Button { showDownloader = true } label: { Label("Download from URL", systemImage: "arrow.down.circle") }
-                    Button { showImporter = true } label: { Label("Import from Files", systemImage: "folder") }
-                    Button { editingEndpoint = RemoteEndpoint(name: "", baseURL: "https://api.openai.com/v1", apiKey: "", modelID: "") } label: { Label("Add API Endpoint", systemImage: "cloud") }
+                    Button { sheets.showRecommended = true } label: { Label("Recommended Models", systemImage: "sparkles") }
+                    Button { sheets.showDownloader = true } label: { Label("Download from URL", systemImage: "arrow.down.circle") }
+                    Button { sheets.showImporter = true } label: { Label("Import from Files", systemImage: "folder") }
+                    Button { sheets.editingEndpoint = RemoteEndpoint(name: "", baseURL: "https://api.openai.com/v1", apiKey: "", modelID: "") } label: { Label("Add API Endpoint", systemImage: "cloud") }
                 } label: { Label("Add", systemImage: "plus.circle") }
             }
         } footer: {
@@ -124,7 +109,7 @@ struct ModelManagerView: View {
                 Text("Add an OpenAI-compatible API endpoint to use a cloud model.").foregroundStyle(.secondary)
             }
             ForEach(remotes.endpoints) { ep in
-                Button { editingEndpoint = ep } label: {
+                Button { sheets.editingEndpoint = ep } label: {
                     HStack {
                         Image(systemName: "cloud").foregroundStyle(Color.accentColor)
                         VStack(alignment: .leading, spacing: 2) {
@@ -160,9 +145,12 @@ struct ModelManagerView: View {
                     HStack(spacing: 6) {
                         Text(model.fileSizeText).font(.caption).foregroundStyle(.secondary)
                         if model.hasMultimodal {
-                            Label("Multimodal", systemImage: "photo")
-                                .font(.caption2).padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(Color.accentColor.opacity(0.15), in: Capsule())
+                            HStack(spacing: 3) {
+                                Image(systemName: "photo")
+                                Text("Multimodal")
+                            }
+                            .font(.caption2).padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(Color.accentColor.opacity(0.15), in: Capsule())
                         }
                         if model.isBuiltIn {
                             Text("test").font(.caption2).foregroundStyle(.secondary)
