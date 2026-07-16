@@ -7,10 +7,10 @@ cd "$(dirname "$0")/.."
 ASSETS="src/openTihui/Assets.xcassets"
 
 fetch() {
-    fam="$1"; repo="$2"
-    url=$(curl -sm 20 "https://huggingface.co/api/models/$repo?expand[]=authorData" | python3 -c "
+    fam="$1"; org="$2"
+    url=$(curl -sgm 20 "https://huggingface.co/api/organizations/$org/overview" | python3 -c "
 import json,sys
-try: print((json.load(sys.stdin).get('authorData') or {}).get('avatarUrl') or '')
+try: print(json.load(sys.stdin).get('avatarUrl') or '')
 except Exception: print('')")
     case "$url" in /*) url="https://huggingface.co$url";; "") echo "$fam: no avatar URL (HF unreachable?)"; return;; esac
     tmp=$(mktemp)
@@ -28,10 +28,10 @@ JSON
     echo "$fam: ok"
 }
 
-fetch qwen     "Qwen/Qwen3.5-2B"
-fetch gemma    "google/gemma-4-E2B-it"
-fetch bonsai   "prism-ml/Bonsai-27B-gguf"
-fetch llama    "meta-llama/Llama-3.1-8B"
-fetch mistral  "mistralai/Mistral-7B-v0.1"
-fetch deepseek "deepseek-ai/DeepSeek-V3"
-fetch phi      "microsoft/phi-4"
+fetch qwen     "Qwen"
+fetch gemma    "google"
+fetch bonsai   "prism-ml"
+fetch llama    "meta-llama"
+fetch mistral  "mistralai"
+fetch deepseek "deepseek-ai"
+fetch phi      "microsoft"
