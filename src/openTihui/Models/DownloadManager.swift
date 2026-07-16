@@ -200,5 +200,10 @@ struct RecommendedModel: Identifiable {
                          repo: "unsloth/gemma-4-E4B-it-GGUF",
                          file: "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
                          mmproj: "mmproj-BF16.gguf"),
+        RecommendedModel(name: "Bonsai 27B",
+                         detail: "27B in ~3.9 GB (1-bit) · vision · needs a recent device",
+                         repo: "prism-ml/Bonsai-27B-gguf",
+                         file: "Bonsai-27B-Q1_0.gguf",
+                         mmproj: "Bonsai-27B-mmproj-Q8_0.gguf"),
     ]
 }
