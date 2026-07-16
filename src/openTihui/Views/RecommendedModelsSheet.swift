@@ -37,6 +37,7 @@ struct RecommendedModelsSheet: View {
     private func row(_ model: RecommendedModel) -> some View {
         let state = state(of: model)
         HStack(spacing: 12) {
+            ModelBadge(name: model.name, size: 40)
             VStack(alignment: .leading, spacing: 3) {
                 Text(model.name).font(.body.weight(.semibold))
                 Text(LocalizedStringKey(model.detail)).font(.caption).foregroundStyle(.secondary)

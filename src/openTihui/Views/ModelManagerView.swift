@@ -149,7 +149,8 @@ struct ModelManagerView: View {
         return NavigationLink {
             ModelDetailView(model: model)
         } label: {
-            HStack {
+            HStack(spacing: 12) {
+                ModelBadge(name: model.name, size: 40)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(model.name).font(.body).lineLimit(2)
                     if model.folderLabel != "Models" {

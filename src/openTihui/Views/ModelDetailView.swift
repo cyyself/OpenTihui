@@ -71,7 +71,8 @@ struct ModelDetailView: View {
     var body: some View {
         Form {
             Section {
-                HStack {
+                HStack(spacing: 12) {
+                    ModelBadge(name: model.name, size: 34)
                     Text("Name")
                     Spacer()
                     TextField(defaultName, text: $displayName)

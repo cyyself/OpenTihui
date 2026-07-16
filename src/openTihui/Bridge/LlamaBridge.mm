@@ -225,7 +225,7 @@ static void llamachat_log_capture(enum ggml_log_level level, const char *text, v
 
     _model = llama_model_load_from_file(modelPath.fileSystemRepresentation, mparams);
     if (!_model) {
-        [self failWith:error msg:@"Failed to load model file."];
+        [self failWith:error msg:@"Failed to load the model — its format or architecture may be unsupported by this llama.cpp build. See Settings ▸ Logs for the exact reason."];
         return NO;
     }
     _vocab = llama_model_get_vocab(_model);
